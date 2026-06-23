@@ -26,3 +26,13 @@
 
 
 *GPU Implementations and CUDA Graph Acceleration of Krylov Solvers for Incompressible Navier–Stokes in NGSolve*
+
+
+---
+
+## How to use
+
+- **Google Colab** — no installation, runs in the browser  
+  [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/natalia342N/ngs26_linearsolvers_gpu/blob/main/docs/ngsolve_meeting_tutorial.ipynb)
+- **Local GPU** — `pip install ngsolve`, then open the tutorial notebook
+- **HPC cluster** — see [Getting Started](installation.md) for build and job submission
