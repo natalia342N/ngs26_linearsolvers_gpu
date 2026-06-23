@@ -1,0 +1,19 @@
+format: jb-book
+root: intro.md
+
+parts:
+  - caption: Getting Started
+    chapters:
+    - file: installation.md
+
+
+  - caption: CUDA Graph 
+    chapters:
+    - file: profiling.md
+    - file: implementation.md
+    - file: ngsolve_meeting_tutorial.md
+
+  - caption: Timings
+    chapters:
+    - file: timings.md
+
