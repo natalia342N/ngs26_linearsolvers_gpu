@@ -1,14 +1,17 @@
 # Implementation
 
+```{danger}
+Screenshot will be replaced soon.
+
 `DevCGSolver` implements the preconditioned CG method entirely on the GPU using
-a **CUDA WHILE graph** — a conditional graph node (CUDA ≥ 12.4) that keeps the
-convergence loop GPU-resident with zero per-iteration CPU involvement.
+a **CUDA Conditional Graph** — a conditional while graph node that keeps the
+convergence loop GPU resident with zero per iteration CPU work.
 
 The implementation has two steps.
 
 ---
 
-## Step 1 — Capture the iteration body as a CUDA graph
+## Step 1 — Capture the iteration body as a CUDA graph (goal: eliminate launch overhead)
 
 ![Timeline overview](pictures/implementation_step1.png)
 
@@ -26,7 +29,7 @@ no per-kernel `cudaLaunchKernel` call, just one `cudaGraphLaunch`.
 
 ---
 
-## Step 2 — Wrap in a CUDA WHILE conditional node
+## Step 2 — Wrap in a CUDA WHILE conditional node (eliminate CPU convergence checks)
 
 
 ![Timeline overview](pictures/implementation_step2.png)

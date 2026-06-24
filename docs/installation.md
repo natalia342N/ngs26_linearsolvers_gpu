@@ -1,4 +1,4 @@
-# Musica (EESSI / ASC 2025)
+# Musica HPC
 
 This page is optional and covers building NGSolve with CUDA support and running GPU jobs on the Musica HPC cluster by ASC Research Center.
 
@@ -36,7 +36,7 @@ git clone --recurse-submodules https://github.com/NGSolve/ngsolve.git src/ngsolv
 
 Run the build script **on the login node** (no GPU needed for building):
 
-```{dropdown} build_ngsolve.sh
+````{dropdown} build_ngsolve.sh
 ```bash
 #!/bin/sh
 set -e
@@ -85,10 +85,11 @@ pip install numpy scipy -q
 echo "=== Build done ==="
 echo "Install prefix: ${WORKING_DIR}/install"
 ```
-```
+````
 
 ### Fast rebuild (ngscuda changes only)
 
+````{dropdown} fast_rebuild.sh
 ```bash
 ml --force purge
 ml load ASC/2025.06
@@ -101,6 +102,7 @@ ml unload pybind11 || true
 cd ~/ngscuda/build/ngsolve/ngscuda
 make -j8 && make install
 ```
+````
 
 ---
 
@@ -108,7 +110,7 @@ make -j8 && make install
 
 Adjust `WORKING_DIR` and `my_script.py` to your paths.
 
-```{dropdown} submit.sh
+````{dropdown} submit.sh
 ```bash
 #!/bin/bash
 #SBATCH --job-name=ngscuda_job
@@ -149,7 +151,7 @@ python3 -c "import ngsolve.ngscuda; print('ngscuda: OK')"
 echo "=== Running ==="
 python3 my_script.py
 ```
-```
+````
 
 Submit with:
 ```bash
@@ -160,7 +162,7 @@ sbatch submit.sh
 
 ## 4. Run a Jupyter notebook on GPU
 
-```{dropdown} submit_notebook.sh
+````{dropdown} submit_notebook.sh
 ```bash
 #!/bin/bash
 #SBATCH --job-name=run_notebook
@@ -201,7 +203,7 @@ jupyter nbconvert \
     --output my_notebook_executed.ipynb \
     my_notebook.ipynb
 ```
-```
+````
 
 ---
 
@@ -209,7 +211,7 @@ jupyter nbconvert \
 
 Verify the build works before running other scripts.
 
-```{dropdown} quicktest_cg.py
+````{dropdown} quicktest_cg.py
 ```python
 from ngsolve import *
 import ngsolve.ngscuda as ngscuda
@@ -232,9 +234,9 @@ gfu = GridFunction(fes)
 solver.Mult(fdev, gfu.vec)
 print(f"DevCGSolver OK — |sol| = {Norm(gfu.vec):.6f}")
 ```
-```
+````
 
-```{dropdown} quicktest_tfqmr.py
+````{dropdown} quicktest_tfqmr.py
 ```python
 from ngsolve import *
 import ngsolve.ngscuda as ngscuda
@@ -263,7 +265,7 @@ gfu = GridFunction(fes)
 solver.Mult(rhs_pre, gfu.vec)
 print(f"DevTFQMRSolver OK — |sol| = {Norm(gfu.vec):.6f}")
 ```
-```
+````
 
 ---
 
