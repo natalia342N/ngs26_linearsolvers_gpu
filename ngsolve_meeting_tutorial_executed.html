@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Tutorial: Use case with NGSolve &#8212; Linear Solvers on GPUs with NGSolve</title>
+    <title>GPU-Accelerated Krylov Solvers in NGSolve &#8212; Linear Solvers on GPUs with NGSolve</title>
   
   
   
@@ -62,11 +62,9 @@
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'ngsolve_meeting_tutorial';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'ngsolve_meeting_tutorial_executed';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Results &amp; Timings" href="timings.html" />
-    <link rel="prev" title="Implementation" href="implementation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -117,6 +115,8 @@
     <div class="bd-container__inner bd-page-width">
       
       
+      
+        
       
       <dialog id="pst-primary-sidebar-modal"></dialog>
       <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
@@ -175,10 +175,10 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Musica (EESSI / ASC 2025)</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">CUDA Graph</span></p>
-<ul class="current nav bd-sidenav">
+<ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="profiling.html">Profiling with NVIDIA Nsight Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="implementation.html">Implementation</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Tutorial: Use case with NGSolve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ngsolve_meeting_tutorial.html">Tutorial: Use case with NGSolve</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Timings</span></p>
 <ul class="nav bd-sidenav">
@@ -242,7 +242,7 @@
       
       
       
-      <li><a href="https://colab.research.google.com/github/natalia342N/starting_with_ngscuda.git/blob/master/ngsolve_meeting_tutorial.ipynb" target="_blank"
+      <li><a href="https://colab.research.google.com/github/natalia342N/starting_with_ngscuda.git/blob/master/ngsolve_meeting_tutorial_executed.ipynb" target="_blank"
    class="btn btn-sm dropdown-item"
    title="Launch on Colab"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -288,7 +288,7 @@
       
       
       
-      <li><a href="_sources/ngsolve_meeting_tutorial.ipynb" target="_blank"
+      <li><a href="_sources/ngsolve_meeting_tutorial_executed.ipynb" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -364,7 +364,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Tutorial: Use case with NGSolve</h1>
+    <h1>GPU-Accelerated Krylov Solvers in NGSolve</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -386,6 +386,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Scaling problem size</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
 </ul>
             </nav>
         </div>
@@ -397,8 +398,8 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="tutorial-use-case-with-ngsolve">
-<h1>Tutorial: Use case with NGSolve<a class="headerlink" href="#tutorial-use-case-with-ngsolve" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="gpu-accelerated-krylov-solvers-in-ngsolve">
+<h1>GPU-Accelerated Krylov Solvers in NGSolve<a class="headerlink" href="#gpu-accelerated-krylov-solvers-in-ngsolve" title="Link to this heading">#</a></h1>
 <p><strong>NGSolve User Meeting 2026 — Natalia Tylek, TU Wien</strong></p>
 <p>This notebook shows how to use the GPU Krylov solvers in NGSolve’s <code class="docutils literal notranslate"><span class="pre">ngscuda</span></code> module:</p>
 <ul class="simple">
@@ -408,6 +409,9 @@
 <blockquote>
 <div><p><strong>GPU required:</strong> In Colab, go to <strong>Runtime → Change runtime type</strong> and select <strong>T4 GPU</strong> (free) or any GPU partition available for you.</p>
 </div></blockquote>
+<blockquote>
+<div><p>Any NVIDIA GPU with CUDA ≥ 12.4 works — if you have access to an A100 or H100, use that instead.</p>
+</div></blockquote>
 <div class="cell tag_hide-cell docutils container">
 <details class="admonition hide above-input">
 <summary aria-label="Toggle hidden content">
@@ -415,9 +419,9 @@
 <p class="expanded admonition-title">Hide code cell content</p>
 </summary>
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="k">if</span> <span class="s1">&#39;google.colab&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">:</span>
-    <span class="err">!</span><span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">--</span><span class="n">pre</span> <span class="n">ngsolve</span> <span class="n">anywidget</span> <span class="o">-</span><span class="n">q</span>
+    <span class="o">!</span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>--pre<span class="w"> </span>ngsolve<span class="w"> </span>anywidget<span class="w"> </span>-q
 </pre></div>
 </div>
 </div>
@@ -428,7 +432,7 @@
 <h2>Check if GPU is available<a class="headerlink" href="#check-if-gpu-is-available" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;nvidia-smi&#39;</span><span class="p">,</span> <span class="s1">&#39;--query-gpu=name,memory.total&#39;</span><span class="p">,</span> <span class="s1">&#39;--format=csv,noheader&#39;</span><span class="p">],</span>
                         <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">returncode</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -438,10 +442,15 @@
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>GPU found NVIDIA H100, 95830 MiB
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ngsolve</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ngsolve</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ngsolve</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ngsolve</span><span class="w"> </span><span class="kn">import</span> <span class="n">la</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ngsolve.solvers</span><span class="w"> </span><span class="kn">import</span> <span class="n">TFQMR</span>
@@ -453,6 +462,21 @@
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;no CUDA library or device available, using replacement types on host&quot;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;NGSolve version:&quot;</span><span class="p">,</span> <span class="n">ngsolve</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CUDA Device Query...
+There is 1 CUDA device.
+CUDA Device 0: NVIDIA H100, cap 9.0
+Using device 0
+Initializing cublas and cusparse.
+NGSolve version: 6.2.2604-9-gf15d395df
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[cusparse] handle created
+[InitCuLinalg] cusparseSetStream bound to ngs_cuda_stream
+[InitCuLinalg] callback wired, registering creators...
 </pre></div>
 </div>
 </div>
@@ -469,7 +493,7 @@
 with the new <strong>CUDA graph</strong> execution mode.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mesh</span> <span class="o">=</span> <span class="n">Mesh</span><span class="p">(</span><span class="n">unit_square</span><span class="o">.</span><span class="n">GenerateMesh</span><span class="p">(</span><span class="n">maxh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mesh</span> <span class="o">=</span> <span class="n">Mesh</span><span class="p">(</span><span class="n">unit_square</span><span class="o">.</span><span class="n">GenerateMesh</span><span class="p">(</span><span class="n">maxh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span> <span class="n">mesh</span><span class="o">.</span><span class="n">Refine</span><span class="p">()</span>
 
 <span class="n">fes</span> <span class="o">=</span> <span class="n">H1</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dirichlet</span><span class="o">=</span><span class="s1">&#39;.*&#39;</span><span class="p">)</span>
@@ -486,14 +510,20 @@ with the new <strong>CUDA graph</strong> execution mode.</p>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ndof = 460033
+</pre></div>
+</div>
+</div>
 </div>
 <section id="solve-on-cpu-for-reference-timing-and-solution">
 <h3>Solve on CPU for reference timing and solution<a class="headerlink" href="#solve-on-cpu-for-reference-timing-and-solution" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">TaskManager</span><span class="p">():</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">TaskManager</span><span class="p">():</span>
     <span class="n">cpu_solver</span> <span class="o">=</span> <span class="n">CGSolver</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">mat</span><span class="p">,</span> <span class="n">jac</span><span class="p">,</span> <span class="n">maxiter</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
-    <span class="n">gfu</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">cpu_solver</span> <span class="o">*</span> <span class="n">f</span><span class="o">.</span><span class="n">vec</span>   
+    <span class="n">gfu</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">cpu_solver</span> <span class="o">*</span> <span class="n">f</span><span class="o">.</span><span class="n">vec</span>   <span class="c1"># warmup 1</span>
+    <span class="n">gfu</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">cpu_solver</span> <span class="o">*</span> <span class="n">f</span><span class="o">.</span><span class="n">vec</span>   <span class="c1"># warmup 2</span>
     <span class="n">ts</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span> <span class="n">gfu</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">cpu_solver</span> <span class="o">*</span> <span class="n">f</span><span class="o">.</span><span class="n">vec</span>
     <span class="n">cpu_ms</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">ts</span><span class="p">)</span> <span class="o">/</span> <span class="mi">5</span> <span class="o">*</span> <span class="mi">1000</span>
@@ -507,10 +537,17 @@ with the new <strong>CUDA graph</strong> execution mode.</p>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU CG:  26420 ms
+  |sol| = 6.691534e+00
+  steps = 1671
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">adev</span>   <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">adev</span>   <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
 <span class="n">jacdev</span> <span class="o">=</span> <span class="n">jac</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
 <span class="n">fdev</span>   <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">CreateDeviceVector</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -526,13 +563,20 @@ with the new <strong>CUDA graph</strong> execution mode.</p>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>GPU CG (no graph):  192 ms
+  diff    = 4.6e-12
+  speedup = 137.78x
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="gpu-acceleration">
 <h3>GPU acceleration<a class="headerlink" href="#gpu-acceleration" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gpu_solver</span> <span class="o">=</span> <span class="n">DevCGSolver</span><span class="p">(</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gpu_solver</span> <span class="o">=</span> <span class="n">DevCGSolver</span><span class="p">(</span>
     <span class="n">mat</span><span class="o">=</span><span class="n">adev</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">jacdev</span><span class="p">,</span>
     <span class="n">adev_raw</span><span class="o">=</span><span class="n">adev</span><span class="p">,</span> <span class="n">cdev_raw</span><span class="o">=</span><span class="n">jacdev</span><span class="p">,</span>
     <span class="n">maxsteps</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">printrates</span><span class="o">=</span><span class="kc">False</span>
@@ -549,11 +593,42 @@ with the new <strong>CUDA graph</strong> execution mode.</p>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>GPU CG (WHILE graph):  154 ms
+  diff    = 1.3e-09
+  speedup = 171.83x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+</div>
 </div>
 <blockquote>
 <div><p><strong>Note:</strong> <code class="docutils literal notranslate"><span class="pre">DevCGSolver</span></code> automatically selects the best available GPU execution mode:</p>
 <ul class="simple">
-<li><p><strong>Conditional Graph</strong> (CUDA ≥ 12.4) — entire convergence loop on device, zero per-iteration host–device sync</p></li>
+<li><p><strong>WHILE graph</strong> (CUDA ≥ 12.4) — entire convergence loop on device, zero per-iteration host–device sync</p></li>
 <li><p><strong>per-iteration graph</strong> — fallback for older CUDA</p></li>
 <li><p><strong>no-graph</strong> — set <code class="docutils literal notranslate"><span class="pre">NO_CUDA_GRAPH=1</span></code> to disable graph capture</p></li>
 </ul>
@@ -564,7 +639,7 @@ with the new <strong>CUDA graph</strong> execution mode.</p>
 <h3>Scaling problem size<a class="headerlink" href="#scaling-problem-size" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;ndof&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;CPU (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;no graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;14</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;WHILE graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;17</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;speedup&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;ndof&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;CPU (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;no graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;14</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;WHILE graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;17</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;speedup&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">66</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">nref</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]:</span>
@@ -606,6 +681,105 @@ with the new <strong>CUDA graph</strong> execution mode.</p>
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>    ndof    CPU (ms)   no graph (ms)   WHILE graph (ms)   speedup
+------------------------------------------------------------------
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>    7329         237              13                  8     1.71x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>   28993         878              26                 16     1.62x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  115329        2694              60                 42     1.43x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  460033       26329             190                159     1.19x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 17
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 17
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span> 1837569      227742             616                532     1.16x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+</div>
 </div>
 <details>
 <summary><b>H100 reference results — Part 1 (Musica, June 2026)</b></summary>
@@ -615,58 +789,68 @@ with the new <strong>CUDA graph</strong> execution mode.</p>
 <tr class="row-odd"><th class="head"><p>Solver</p></th>
 <th class="head text-right"><p>Time (ms)</p></th>
 <th class="head text-right"><p>Speedup vs CPU</p></th>
+<th class="head text-right"><p>Speedup vs no-graph</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>CPU CG</p></td>
-<td class="text-right"><p>~26,000</p></td>
+<td class="text-right"><p>24,567</p></td>
+<td class="text-right"><p>—</p></td>
 <td class="text-right"><p>—</p></td>
 </tr>
-<tr class="row-odd"><td><p>Python CGSolver (device matrices)</p></td>
+<tr class="row-odd"><td><p>GPU CG (no graph)</p></td>
 <td class="text-right"><p>191</p></td>
-<td class="text-right"><p><strong>~130×</strong></p></td>
+<td class="text-right"><p><strong>128×</strong></p></td>
+<td class="text-right"><p>—</p></td>
 </tr>
-<tr class="row-even"><td><p>DevCGSolver (WHILE graph)</p></td>
+<tr class="row-even"><td><p>GPU CG (WHILE graph)</p></td>
 <td class="text-right"><p>154</p></td>
-<td class="text-right"><p><strong>~160×</strong></p></td>
+<td class="text-right"><p><strong>160×</strong></p></td>
+<td class="text-right"><p><strong>1.24×</strong></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Scaling (Python CGSolver vs DevCGSolver WHILE graph):</p>
+<p>Scaling:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head text-right"><p>ndof</p></th>
-<th class="head text-right"><p>Python CG (ms)</p></th>
+<th class="head text-right"><p>CPU (ms)</p></th>
+<th class="head text-right"><p>no graph (ms)</p></th>
 <th class="head text-right"><p>WHILE graph (ms)</p></th>
 <th class="head text-right"><p>speedup</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td class="text-right"><p>7,329</p></td>
+<td class="text-right"><p>14</p></td>
 <td class="text-right"><p>13</p></td>
 <td class="text-right"><p>8</p></td>
-<td class="text-right"><p><strong>1.71×</strong></p></td>
+<td class="text-right"><p><strong>1.70×</strong></p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p>28,993</p></td>
+<td class="text-right"><p>111</p></td>
 <td class="text-right"><p>26</p></td>
 <td class="text-right"><p>16</p></td>
-<td class="text-right"><p><strong>1.62×</strong></p></td>
+<td class="text-right"><p><strong>1.61×</strong></p></td>
 </tr>
 <tr class="row-even"><td class="text-right"><p>115,329</p></td>
-<td class="text-right"><p>60</p></td>
+<td class="text-right"><p>919</p></td>
+<td class="text-right"><p>61</p></td>
 <td class="text-right"><p>42</p></td>
-<td class="text-right"><p>1.43×</p></td>
+<td class="text-right"><p>1.44×</p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p>460,033</p></td>
+<td class="text-right"><p>8,321</p></td>
 <td class="text-right"><p>190</p></td>
 <td class="text-right"><p>159</p></td>
 <td class="text-right"><p>1.19×</p></td>
 </tr>
 <tr class="row-even"><td class="text-right"><p>1,837,569</p></td>
-<td class="text-right"><p>616</p></td>
+<td class="text-right"><p>42,553</p></td>
+<td class="text-right"><p>621</p></td>
 <td class="text-right"><p>532</p></td>
-<td class="text-right"><p>1.16×</p></td>
+<td class="text-right"><p>1.17×</p></td>
 </tr>
 </tbody>
 </table>
@@ -683,7 +867,7 @@ The stiffness matrix is <strong>non-symmetric</strong> — CG does not apply.</p
 growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes</strong> linearizations.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 3D DG convection — same setup as the CUDA benchmark</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># 3D DG convection — same setup as the CUDA benchmark</span>
 <span class="n">mesh2</span> <span class="o">=</span> <span class="n">Mesh</span><span class="p">(</span><span class="n">unit_cube</span><span class="o">.</span><span class="n">GenerateMesh</span><span class="p">(</span><span class="n">maxh</span><span class="o">=</span><span class="mf">0.05</span><span class="p">))</span>
 <span class="n">fes2</span>  <span class="o">=</span> <span class="n">L2</span><span class="p">(</span><span class="n">mesh2</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dgjumps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">u2</span><span class="p">,</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">fes2</span><span class="o">.</span><span class="n">TnT</span><span class="p">()</span>
@@ -700,7 +884,7 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
     <span class="n">a2</span><span class="o">.</span><span class="n">Assemble</span><span class="p">()</span>
 
 <span class="n">blocks</span> <span class="o">=</span> <span class="n">fes2</span><span class="o">.</span><span class="n">CreateSmoothingBlocks</span><span class="p">(</span><span class="n">blocktype</span><span class="o">=</span><span class="s1">&#39;element&#39;</span><span class="p">)</span>
-<span class="n">pre2</span>   <span class="o">=</span> <span class="n">a2</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateBlockSmoother</span><span class="p">(</span><span class="n">blocks</span><span class="p">)</span> 
+<span class="n">pre2</span>   <span class="o">=</span> <span class="n">a2</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateBlockSmoother</span><span class="p">(</span><span class="n">blocks</span><span class="p">)</span>   <span class="c1"># block element smoother</span>
 <span class="n">pre2p</span>  <span class="o">=</span> <span class="n">Projector</span><span class="p">(</span><span class="n">fes2</span><span class="o">.</span><span class="n">FreeDofs</span><span class="p">(),</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">f2</span>     <span class="o">=</span> <span class="n">LinearForm</span><span class="p">(</span><span class="mi">1</span><span class="o">*</span><span class="n">v2</span><span class="o">*</span><span class="n">dx</span><span class="p">)</span><span class="o">.</span><span class="n">Assemble</span><span class="p">()</span>
 <span class="n">gfu2</span>   <span class="o">=</span> <span class="n">GridFunction</span><span class="p">(</span><span class="n">fes2</span><span class="p">)</span>
@@ -709,10 +893,29 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>OpenBLAS warning: precompiled NUM_THREADS exceeded, adding auxiliary array for thread metadata.
+To avoid this warning, please rebuild your copy of OpenBLAS with a larger NUM_THREADS setting
+or set the environment variable OPENBLAS_NUM_THREADS to 16 or lower
+OpenBLAS warning: precompiled NUM_THREADS exceeded, adding auxiliary array for thread metadata.
+To avoid this warning, please rebuild your copy of OpenBLAS with a larger NUM_THREADS setting
+or set the environment variable OPENBLAS_NUM_THREADS to 16 or lower
+OpenBLAS warning: precompiled NUM_THREADS exceeded, adding auxiliary array for thread metadata.
+To avoid this warning, please rebuild your copy of OpenBLAS with a larger NUM_THREADS setting
+or set the environment variable OPENBLAS_NUM_THREADS to 16 or lower
+OpenBLAS warning: precompiled NUM_THREADS exceeded, adding auxiliary array for thread metadata.
+To avoid this warning, please rebuild your copy of OpenBLAS with a larger NUM_THREADS setting
+or set the environment variable OPENBLAS_NUM_THREADS to 16 or lower
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>ndof = 340370
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># CPU TFQMR reference</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># CPU TFQMR reference</span>
 <span class="k">with</span> <span class="n">TaskManager</span><span class="p">():</span>
     <span class="n">gfu2</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">TFQMR</span><span class="p">(</span><span class="n">mat</span><span class="o">=</span><span class="n">pre2</span><span class="nd">@a2</span><span class="o">.</span><span class="n">mat</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">pre2p</span><span class="p">,</span>
                            <span class="n">rhs</span><span class="o">=</span><span class="p">(</span><span class="n">pre2</span><span class="o">*</span><span class="n">f2</span><span class="o">.</span><span class="n">vec</span><span class="p">)</span><span class="o">.</span><span class="n">Evaluate</span><span class="p">(),</span>
@@ -729,10 +932,15 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CPU TFQMR: 3256 ms   |sol| = 8.791473e+00
+</pre></div>
+</div>
+</div>
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># move data to GPU — reused by DevTFQMRSolver below</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># move data to GPU — reused by DevTFQMRSolver below</span>
 <span class="n">fdev2</span>    <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">CreateDeviceVector</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">adev2</span>    <span class="o">=</span> <span class="n">a2</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
 <span class="n">pdev2</span>    <span class="o">=</span> <span class="n">pre2</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
@@ -755,12 +963,19 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>GPU TFQMR (no graph):  29 ms
+  diff    = 1.8e-15
+  speedup = 110.92x
+</pre></div>
+</div>
+</div>
 </div>
 <section id="id1">
 <h3>GPU acceleration<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># GPU DevTFQMRSolver (WHILE graph)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># GPU DevTFQMRSolver (WHILE graph)</span>
 <span class="n">tfqmr_solver</span> <span class="o">=</span> <span class="n">DevTFQMRSolver</span><span class="p">(</span>
     <span class="n">mat</span><span class="o">=</span><span class="n">pre2</span> <span class="o">@</span> <span class="n">a2</span><span class="o">.</span><span class="n">mat</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">pre2p</span><span class="p">,</span>        <span class="c1"># CPU operators (required by binding)</span>
     <span class="n">adev_raw</span><span class="o">=</span><span class="n">pa_dev2</span><span class="p">,</span> <span class="n">cdev_raw</span><span class="o">=</span><span class="n">pdev2p</span><span class="p">,</span>   <span class="c1"># GPU operators (used for computation)</span>
@@ -779,13 +994,71 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>BLAS : Bad memory unallocation! :  562  0x7f89e439a000
+BLAS : Bad memory unallocation! :  562  0x7f89dc39a000
+BLAS : Bad memory unallocation! :  562  0x7f8af439a000
+BLAS : Bad memory unallocation! :  562  0x7f8a3439a000
+BLAS : Bad memory unallocation! :  562  0x7f8a8c39a000
+BLAS : Bad memory unallocation! :  562  0x7f8afc39a000
+BLAS : Bad memory unallocation! :  562  0x7f8acc39a000
+BLAS : Bad memory unallocation! :  562  0x7f8a4c39a000
+BLAS : Bad memory unallocation! :  562  0x7f8abc39a000
+BLAS : Bad memory unallocation! :  562  0x7f895c39a000
+BLAS : Bad memory unallocation! :  562  0x7f89f439a000
+BLAS : Bad memory unallocation! :  562  0x7f89c439a000
+BLAS : Bad memory unallocation! :  562  0x7f8b6c39a000
+BLAS : Bad memory unallocation! :  562  0x7f8a9c39a000
+BLAS : Bad memory unallocation! :  562  0x7f89a439a000
+BLAS : Bad memory unallocation! :  562  0x7f8a1439a000
+BLAS : Bad memory unallocation! :  562  0x7f89b439a000
+BLAS : Bad memory unallocation! :  562  0x7f895439a000
+BLAS : Bad memory unallocation! :  562  0x7f8a3c39a000
+BLAS : Bad memory unallocation! :  562  0x7f898c39a000
+BLAS : Bad memory unallocation! :  562  0x7f897439a000
+BLAS : Bad memory unallocation! :  562  0x7f89cc39a000
+BLAS : Bad memory unallocation! :  562  0x7f8a9439a000
+BLAS : Bad memory unallocation! :  562  0x7f8b5439a000
+BLAS : Bad memory unallocation! :  562  0x7f8ad439a000
+BLAS : Bad memory unallocation! :  562  0x7f8ac439a000
+BLAS : Bad memory unallocation! :  562  0x7f8aa439a000
+BLAS : Bad memory unallocation! :  562  0x7f8a2439a000
+BLAS : Bad memory unallocation! :  562  0x7f8a1c39a000
+BLAS : Bad memory unallocation! :  562  0x7f8a0c39a000
+BLAS : Bad memory unallocation! :  562  0x7f898439a000
+BLAS : Bad memory unallocation! :  562  0x7f894c39a000
+BLAS : Bad memory unallocation! :  562  0x7f894439a000
+BLAS : Bad memory unallocation! :  562  0x7f8a2c39a000
+BLAS : Bad memory unallocation! :  562  0x7f8a5439a000
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>GPU TFQMR (WHILE graph):  19 ms
+  diff    = 5.3e-15
+  speedup = 168.5x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+</div>
 </div>
 </section>
 <section id="id2">
 <h3>Scaling problem size<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;ndof&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;CPU (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;no graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;14</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;WHILE graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;17</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;speedup&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;ndof&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;CPU (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;no graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;14</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;WHILE graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;17</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;speedup&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">66</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">maxh</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">]:</span>
@@ -849,6 +1122,80 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
 </pre></div>
 </div>
 </div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>    ndof    CPU (ms)   no graph (ms)   WHILE graph (ms)   speedup
+------------------------------------------------------------------
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>    6520         169               5                  2     2.73x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>   47810         351               8                  4     2.38x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  149650        1296              15                  8     1.94x
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>  340370        3430              29                 19     1.55x
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+[CudaGraph] captured nodes: 47
+[CudaWhileGraph] body graph nodes: 2
+[CudaWhileGraph] Build successful
+</pre></div>
+</div>
+</div>
 </div>
 <details>
 <summary><b>H100 reference results — Part 2 (Musica, June 2026)</b></summary>
@@ -858,50 +1205,59 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
 <tr class="row-odd"><th class="head"><p>Solver</p></th>
 <th class="head text-right"><p>Time (ms)</p></th>
 <th class="head text-right"><p>Speedup vs CPU</p></th>
+<th class="head text-right"><p>Speedup vs no-graph</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>CPU TFQMR</p></td>
 <td class="text-right"><p>3,148</p></td>
 <td class="text-right"><p>—</p></td>
+<td class="text-right"><p>—</p></td>
 </tr>
-<tr class="row-odd"><td><p>Python TFQMR (device matrices)</p></td>
+<tr class="row-odd"><td><p>GPU TFQMR (no graph)</p></td>
 <td class="text-right"><p>29</p></td>
 <td class="text-right"><p><strong>108×</strong></p></td>
+<td class="text-right"><p>—</p></td>
 </tr>
-<tr class="row-even"><td><p>DevTFQMRSolver (WHILE graph)</p></td>
+<tr class="row-even"><td><p>GPU TFQMR (WHILE graph)</p></td>
 <td class="text-right"><p>19</p></td>
 <td class="text-right"><p><strong>165×</strong></p></td>
+<td class="text-right"><p><strong>1.54×</strong></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Scaling (Python TFQMR vs DevTFQMRSolver WHILE graph):</p>
+<p>Scaling:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head text-right"><p>ndof</p></th>
-<th class="head text-right"><p>Python TFQMR (ms)</p></th>
+<th class="head text-right"><p>CPU (ms)</p></th>
+<th class="head text-right"><p>no graph (ms)</p></th>
 <th class="head text-right"><p>WHILE graph (ms)</p></th>
 <th class="head text-right"><p>speedup</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td class="text-right"><p>6,520</p></td>
+<td class="text-right"><p>164</p></td>
 <td class="text-right"><p>5</p></td>
 <td class="text-right"><p>2</p></td>
 <td class="text-right"><p><strong>2.78×</strong></p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p>47,810</p></td>
+<td class="text-right"><p>263</p></td>
 <td class="text-right"><p>8</p></td>
 <td class="text-right"><p>4</p></td>
 <td class="text-right"><p><strong>2.36×</strong></p></td>
 </tr>
 <tr class="row-even"><td class="text-right"><p>149,650</p></td>
+<td class="text-right"><p>1,251</p></td>
 <td class="text-right"><p>15</p></td>
 <td class="text-right"><p>8</p></td>
 <td class="text-right"><p>1.94×</p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p>340,370</p></td>
+<td class="text-right"><p>3,044</p></td>
 <td class="text-right"><p>29</p></td>
 <td class="text-right"><p>19</p></td>
 <td class="text-right"><p>1.54×</p></td>
@@ -910,6 +1266,42 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
 </table>
 </div>
 </details></section>
+</section>
+<hr class="docutils" />
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Solver</p></th>
+<th class="head"><p>Problem type</p></th>
+<th class="head"><p>Typical use case</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">DevCGSolver</span></code></p></td>
+<td><p>Symmetric SPD</p></td>
+<td><p>Poisson, elasticity</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">DevTFQMRSolver</span></code></p></td>
+<td><p>Non-symmetric</p></td>
+<td><p>Convection-diffusion, Navier–Stokes</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Both solvers require no CUDA knowledge, produce numerically identical results to CPU
+counterparts, and automatically select the best GPU execution strategy.</p>
+<p><strong>Minimal changes to an existing NGSolve script:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ngsolve.ngscuda</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+
+<span class="n">adev</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>   <span class="c1"># ← add</span>
+<span class="n">jdev</span> <span class="o">=</span> <span class="n">jac</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>     <span class="c1"># ← add</span>
+
+<span class="n">solver</span> <span class="o">=</span> <span class="n">DevCGSolver</span><span class="p">(</span><span class="n">mat</span><span class="o">=</span><span class="n">adev</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">jdev</span><span class="p">,</span> <span class="n">adev_raw</span><span class="o">=</span><span class="n">adev</span><span class="p">,</span> <span class="n">cdev_raw</span><span class="o">=</span><span class="n">jdev</span><span class="p">,</span>
+                     <span class="n">maxsteps</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+<span class="n">gfu</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">(</span><span class="n">solver</span> <span class="o">*</span> <span class="n">f</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">CreateDeviceVector</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span><span class="o">.</span><span class="n">Evaluate</span><span class="p">()</span>
+</pre></div>
+</div>
 </section>
 </section>
 
@@ -943,24 +1335,6 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
                 <footer class="prev-next-footer d-print-none">
                   
 <div class="prev-next-area">
-    <a class="left-prev"
-       href="implementation.html"
-       title="previous page">
-      <i class="fa-solid fa-angle-left"></i>
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Implementation</p>
-      </div>
-    </a>
-    <a class="right-next"
-       href="timings.html"
-       title="next page">
-      <div class="prev-next-info">
-        <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Results &amp; Timings</p>
-      </div>
-      <i class="fa-solid fa-angle-right"></i>
-    </a>
 </div>
                 </footer>
               
@@ -991,6 +1365,7 @@ growing Krylov basis — this is the relevant solver for <strong>Navier–Stokes
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Scaling problem size</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a></li>
 </ul>
   </nav></div>
 
