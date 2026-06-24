@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Musica (EESSI / ASC 2025) &#8212; Linear Solvers on GPUs with NGSolve</title>
+    <title>Musica HPC &#8212; Linear Solvers on GPUs with NGSolve</title>
   
   
   
@@ -170,17 +170,17 @@
         </ul>
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Musica (EESSI / ASC 2025)</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Musica HPC</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">CUDA Graph</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="profiling.html">Profiling with NVIDIA Nsight Systems</a></li>
 <li class="toctree-l1"><a class="reference internal" href="implementation.html">Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ngsolve_meeting_tutorial.html">GPU-Accelerated Krylov Solvers in NGSolve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ngsolve_meeting_tutorial.html">Tutorial: Use case with NGSolve</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Timings</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="timings.html">Timings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timings.html">Results &amp; Timings</a></li>
 </ul>
 
     </div>
@@ -331,7 +331,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Musica (EESSI / ASC 2025)</h1>
+    <h1>Musica HPC</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -342,9 +342,14 @@
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#log-in">1. Log in</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-ngsolve-with-cuda">2. Build NGSolve with CUDA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-ngsolve-with-cuda">2. Build NGSolve with CUDA</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fast-rebuild-ngscuda-changes-only">Fast rebuild (ngscuda changes only)</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submit-a-gpu-job">3. Submit a GPU job</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-a-jupyter-notebook-on-gpu">4. Run a Jupyter notebook on GPU</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-test">5. Quick test</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-versions-tested-june-2026">Module versions (tested, June 2026)</a></li>
 </ul>
             </nav>
         </div>
@@ -356,8 +361,8 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="musica-eessi-asc-2025">
-<h1>Musica (EESSI / ASC 2025)<a class="headerlink" href="#musica-eessi-asc-2025" title="Link to this heading">#</a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="musica-hpc">
+<h1>Musica HPC<a class="headerlink" href="#musica-hpc" title="Link to this heading">#</a></h1>
 <p>This page is optional and covers building NGSolve with CUDA support and running GPU jobs on the Musica HPC cluster by ASC Research Center.</p>
 <hr class="docutils" />
 <section id="log-in">
@@ -451,22 +456,25 @@ pip<span class="w"> </span>install<span class="w"> </span>numpy<span class="w"> 
 </pre></div>
 </div>
 </div>
-</details><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
-### Fast rebuild (ngscuda changes only)
+</details><section id="fast-rebuild-ngscuda-changes-only">
+<h3>Fast rebuild (ngscuda changes only)<a class="headerlink" href="#fast-rebuild-ngscuda-changes-only" title="Link to this heading">#</a></h3>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">fast_rebuild.sh</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ml<span class="w"> </span>--force<span class="w"> </span>purge
+ml<span class="w"> </span>load<span class="w"> </span>ASC/2025.06
+ml<span class="w"> </span>load<span class="w"> </span>CMake/3.31.3-GCCcore-14.2.0
+ml<span class="w"> </span>load<span class="w"> </span>CUDA/12.9.1
+ml<span class="w"> </span>load<span class="w"> </span>SciPy-bundle/2024.05-gfbf-2024a
+ml<span class="w"> </span>load<span class="w"> </span>occt/7.9.1-GCCcore-14.2.0
+ml<span class="w"> </span>unload<span class="w"> </span>pybind11<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">true</span>
 
-```bash
-ml --force purge
-ml load ASC/2025.06
-ml load CMake/3.31.3-GCCcore-14.2.0
-ml load CUDA/12.9.1
-ml load SciPy-bundle/2024.05-gfbf-2024a
-ml load occt/7.9.1-GCCcore-14.2.0
-ml unload pybind11 || true
-
-cd ~/ngscuda/build/ngsolve/ngscuda
-make -j8 &amp;&amp; make install
+<span class="nb">cd</span><span class="w"> </span>~/ngscuda/build/ngsolve/ngscuda
+make<span class="w"> </span>-j8<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>make<span class="w"> </span>install
 </pre></div>
 </div>
+</div>
+</details></section>
 </section>
 <hr class="docutils" />
 <section id="submit-a-gpu-job">
@@ -516,10 +524,8 @@ python3<span class="w"> </span>my_script.py
 </pre></div>
 </div>
 </div>
-</details><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
-Submit with:
-```bash
-sbatch submit.sh
+</details><p>Submit with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sbatch<span class="w"> </span>submit.sh
 </pre></div>
 </div>
 </section>
@@ -570,84 +576,106 @@ jupyter<span class="w"> </span>nbconvert<span class="w"> </span><span class="se"
 </pre></div>
 </div>
 </div>
-</details><div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
----
+</details></section>
+<hr class="docutils" />
+<section id="quick-test">
+<h2>5. Quick test<a class="headerlink" href="#quick-test" title="Link to this heading">#</a></h2>
+<p>Verify the build works before running other scripts.</p>
+<details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">quicktest_cg.py</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ngsolve</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ngsolve.ngscuda</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ngscuda</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">netgen.occ</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit_square</span>
 
-## 5. Quick test
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">Mesh</span><span class="p">(</span><span class="n">unit_square</span><span class="o">.</span><span class="n">GenerateMesh</span><span class="p">(</span><span class="n">maxh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+<span class="n">fes</span>  <span class="o">=</span> <span class="n">H1</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dirichlet</span><span class="o">=</span><span class="s2">&quot;.*&quot;</span><span class="p">)</span>
+<span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">fes</span><span class="o">.</span><span class="n">TnT</span><span class="p">()</span>
+<span class="n">a</span>    <span class="o">=</span> <span class="n">BilinearForm</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="o">*</span><span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">*</span><span class="n">dx</span> <span class="o">+</span> <span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">dx</span><span class="p">)</span><span class="o">.</span><span class="n">Assemble</span><span class="p">()</span>
+<span class="n">f</span>    <span class="o">=</span> <span class="n">LinearForm</span><span class="p">(</span><span class="mi">1</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">dx</span><span class="p">)</span><span class="o">.</span><span class="n">Assemble</span><span class="p">()</span>
+<span class="n">jac</span>  <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateSmoother</span><span class="p">(</span><span class="n">fes</span><span class="o">.</span><span class="n">FreeDofs</span><span class="p">())</span>
 
-Verify the build works before running other scripts.
+<span class="n">adev</span>   <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
+<span class="n">jacdev</span> <span class="o">=</span> <span class="n">jac</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
+<span class="n">fdev</span>   <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">CreateDeviceVector</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-```{dropdown} quicktest_cg.py
-```python
-from ngsolve import *
-import ngsolve.ngscuda as ngscuda
-from netgen.occ import unit_square
-
-mesh = Mesh(unit_square.GenerateMesh(maxh=0.1))
-fes  = H1(mesh, order=2, dirichlet=&quot;.*&quot;)
-u, v = fes.TnT()
-a    = BilinearForm(grad(u)*grad(v)*dx + u*v*dx).Assemble()
-f    = LinearForm(1*v*dx).Assemble()
-jac  = a.mat.CreateSmoother(fes.FreeDofs())
-
-adev   = a.mat.CreateDeviceMatrix()
-jacdev = jac.CreateDeviceMatrix()
-fdev   = f.vec.CreateDeviceVector(copy=True)
-
-solver = ngscuda.DevCGSolver(mat=adev, pre=jacdev, adev_raw=adev, cdev_raw=jacdev,
-                              precision=1e-8, maxsteps=500, printrates=False)
-gfu = GridFunction(fes)
-solver.Mult(fdev, gfu.vec)
-print(f&quot;DevCGSolver OK — |sol| = {Norm(gfu.vec):.6f}&quot;)
+<span class="n">solver</span> <span class="o">=</span> <span class="n">ngscuda</span><span class="o">.</span><span class="n">DevCGSolver</span><span class="p">(</span><span class="n">mat</span><span class="o">=</span><span class="n">adev</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">jacdev</span><span class="p">,</span> <span class="n">adev_raw</span><span class="o">=</span><span class="n">adev</span><span class="p">,</span> <span class="n">cdev_raw</span><span class="o">=</span><span class="n">jacdev</span><span class="p">,</span>
+                              <span class="n">precision</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">maxsteps</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">printrates</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">gfu</span> <span class="o">=</span> <span class="n">GridFunction</span><span class="p">(</span><span class="n">fes</span><span class="p">)</span>
+<span class="n">solver</span><span class="o">.</span><span class="n">Mult</span><span class="p">(</span><span class="n">fdev</span><span class="p">,</span> <span class="n">gfu</span><span class="o">.</span><span class="n">vec</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DevCGSolver OK — |sol| = </span><span class="si">{</span><span class="n">Norm</span><span class="p">(</span><span class="n">gfu</span><span class="o">.</span><span class="n">vec</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
-```{dropdown} quicktest_tfqmr.py
-```python
-from ngsolve import *
-import ngsolve.ngscuda as ngscuda
-from netgen.occ import unit_square
+</div>
+</details><details class="sd-sphinx-override sd-dropdown sd-card sd-mb-3">
+<summary class="sd-summary-title sd-card-header">
+<span class="sd-summary-text">quicktest_tfqmr.py</span><span class="sd-summary-state-marker sd-summary-chevron-right"><svg version="1.1" width="1.5em" height="1.5em" class="sd-octicon sd-octicon-chevron-right" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.72 18.78a.75.75 0 0 1 0-1.06L14.44 12 8.72 6.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018l6.25 6.25a.75.75 0 0 1 0 1.06l-6.25 6.25a.75.75 0 0 1-1.06 0Z"></path></svg></span></summary><div class="sd-summary-content sd-card-body docutils">
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ngsolve</span><span class="w"> </span><span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ngsolve.ngscuda</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ngscuda</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">netgen.occ</span><span class="w"> </span><span class="kn">import</span> <span class="n">unit_square</span>
 
-mesh = Mesh(unit_square.GenerateMesh(maxh=0.1))
-fes  = H1(mesh, order=2, dirichlet=&quot;.*&quot;)
-u, v = fes.TnT()
-a    = BilinearForm(grad(u)*grad(v)*dx + u*v*dx).Assemble()
-f    = LinearForm(1*v*dx).Assemble()
-pre  = a.mat.CreateSmoother(fes.FreeDofs())
-pre1 = Projector(fes.FreeDofs(), True)
+<span class="n">mesh</span> <span class="o">=</span> <span class="n">Mesh</span><span class="p">(</span><span class="n">unit_square</span><span class="o">.</span><span class="n">GenerateMesh</span><span class="p">(</span><span class="n">maxh</span><span class="o">=</span><span class="mf">0.1</span><span class="p">))</span>
+<span class="n">fes</span>  <span class="o">=</span> <span class="n">H1</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dirichlet</span><span class="o">=</span><span class="s2">&quot;.*&quot;</span><span class="p">)</span>
+<span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">fes</span><span class="o">.</span><span class="n">TnT</span><span class="p">()</span>
+<span class="n">a</span>    <span class="o">=</span> <span class="n">BilinearForm</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="o">*</span><span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">*</span><span class="n">dx</span> <span class="o">+</span> <span class="n">u</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">dx</span><span class="p">)</span><span class="o">.</span><span class="n">Assemble</span><span class="p">()</span>
+<span class="n">f</span>    <span class="o">=</span> <span class="n">LinearForm</span><span class="p">(</span><span class="mi">1</span><span class="o">*</span><span class="n">v</span><span class="o">*</span><span class="n">dx</span><span class="p">)</span><span class="o">.</span><span class="n">Assemble</span><span class="p">()</span>
+<span class="n">pre</span>  <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateSmoother</span><span class="p">(</span><span class="n">fes</span><span class="o">.</span><span class="n">FreeDofs</span><span class="p">())</span>
+<span class="n">pre1</span> <span class="o">=</span> <span class="n">Projector</span><span class="p">(</span><span class="n">fes</span><span class="o">.</span><span class="n">FreeDofs</span><span class="p">(),</span> <span class="kc">True</span><span class="p">)</span>
 
-adev    = a.mat.CreateDeviceMatrix()
-predev  = pre.CreateDeviceMatrix()
-pre1dev = pre1.CreateDeviceMatrix()
-fdev    = f.vec.CreateDeviceVector(copy=True)
+<span class="n">adev</span>    <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">mat</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
+<span class="n">predev</span>  <span class="o">=</span> <span class="n">pre</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
+<span class="n">pre1dev</span> <span class="o">=</span> <span class="n">pre1</span><span class="o">.</span><span class="n">CreateDeviceMatrix</span><span class="p">()</span>
+<span class="n">fdev</span>    <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">CreateDeviceVector</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-pa_dev  = predev @ adev
-rhs_pre = (predev * fdev).Evaluate()
+<span class="n">pa_dev</span>  <span class="o">=</span> <span class="n">predev</span> <span class="o">@</span> <span class="n">adev</span>
+<span class="n">rhs_pre</span> <span class="o">=</span> <span class="p">(</span><span class="n">predev</span> <span class="o">*</span> <span class="n">fdev</span><span class="p">)</span><span class="o">.</span><span class="n">Evaluate</span><span class="p">()</span>
 
-solver = ngscuda.DevTFQMRSolver(mat=pre@a.mat, pre=pre1,
-                                 adev_raw=pa_dev, cdev_raw=pre1dev,
-                                 precision=1e-8, maxsteps=500)
-gfu = GridFunction(fes)
-solver.Mult(rhs_pre, gfu.vec)
-print(f&quot;DevTFQMRSolver OK — |sol| = {Norm(gfu.vec):.6f}&quot;)
+<span class="n">solver</span> <span class="o">=</span> <span class="n">ngscuda</span><span class="o">.</span><span class="n">DevTFQMRSolver</span><span class="p">(</span><span class="n">mat</span><span class="o">=</span><span class="n">pre</span><span class="nd">@a</span><span class="o">.</span><span class="n">mat</span><span class="p">,</span> <span class="n">pre</span><span class="o">=</span><span class="n">pre1</span><span class="p">,</span>
+                                 <span class="n">adev_raw</span><span class="o">=</span><span class="n">pa_dev</span><span class="p">,</span> <span class="n">cdev_raw</span><span class="o">=</span><span class="n">pre1dev</span><span class="p">,</span>
+                                 <span class="n">precision</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">maxsteps</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">gfu</span> <span class="o">=</span> <span class="n">GridFunction</span><span class="p">(</span><span class="n">fes</span><span class="p">)</span>
+<span class="n">solver</span><span class="o">.</span><span class="n">Mult</span><span class="p">(</span><span class="n">rhs_pre</span><span class="p">,</span> <span class="n">gfu</span><span class="o">.</span><span class="n">vec</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DevTFQMRSolver OK — |sol| = </span><span class="si">{</span><span class="n">Norm</span><span class="p">(</span><span class="n">gfu</span><span class="o">.</span><span class="n">vec</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>
----
-
-## Module versions (tested, June 2026)
-
-| Component | Module |
-|---|---|
-| Software stack | `ASC/2025.06` |
-| CUDA (build) | `CUDA/12.9.1` |
-| CUDA (run) | `CUDA/12.9.0` |
-| Python | 3.13 |
-| SciPy (build) | `SciPy-bundle/2024.05-gfbf-2024a` |
-| SciPy (run) | `SciPy-bundle/2025.06-gfbf-2025a` |
-| OCC | `occt/7.9.1-GCCcore-14.2.0` |
-| GPU | NVIDIA H100 (sm_90) |
-</pre></div>
+</div>
+</details></section>
+<hr class="docutils" />
+<section id="module-versions-tested-june-2026">
+<h2>Module versions (tested, June 2026)<a class="headerlink" href="#module-versions-tested-june-2026" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Component</p></th>
+<th class="head"><p>Module</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Software stack</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ASC/2025.06</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>CUDA (build)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CUDA/12.9.1</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>CUDA (run)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CUDA/12.9.0</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>Python</p></td>
+<td><p>3.13</p></td>
+</tr>
+<tr class="row-even"><td><p>SciPy (build)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SciPy-bundle/2024.05-gfbf-2024a</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>SciPy (run)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">SciPy-bundle/2025.06-gfbf-2025a</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>OCC</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">occt/7.9.1-GCCcore-14.2.0</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>GPU</p></td>
+<td><p>NVIDIA H100 (sm_90)</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </section>
 </section>
@@ -719,9 +747,14 @@ print(f&quot;DevTFQMRSolver OK — |sol| = {Norm(gfu.vec):.6f}&quot;)
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#log-in">1. Log in</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-ngsolve-with-cuda">2. Build NGSolve with CUDA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-ngsolve-with-cuda">2. Build NGSolve with CUDA</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fast-rebuild-ngscuda-changes-only">Fast rebuild (ngscuda changes only)</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submit-a-gpu-job">3. Submit a GPU job</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-a-jupyter-notebook-on-gpu">4. Run a Jupyter notebook on GPU</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-test">5. Quick test</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-versions-tested-june-2026">Module versions (tested, June 2026)</a></li>
 </ul>
   </nav></div>
 

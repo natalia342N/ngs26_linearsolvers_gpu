@@ -34,7 +34,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css?v=8cd3d715" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -63,7 +63,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'implementation';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="GPU-Accelerated Krylov Solvers in NGSolve" href="ngsolve_meeting_tutorial.html" />
+    <link rel="next" title="Tutorial: Use case with NGSolve" href="ngsolve_meeting_tutorial.html" />
     <link rel="prev" title="Profiling with NVIDIA Nsight Systems" href="profiling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -170,17 +170,17 @@
         </ul>
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Musica (EESSI / ASC 2025)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Musica HPC</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">CUDA Graph</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="profiling.html">Profiling with NVIDIA Nsight Systems</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Implementation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ngsolve_meeting_tutorial.html">GPU-Accelerated Krylov Solvers in NGSolve</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ngsolve_meeting_tutorial.html">Tutorial: Use case with NGSolve</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Timings</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="timings.html">Timings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timings.html">Results &amp; Timings</a></li>
 </ul>
 
     </div>
@@ -341,8 +341,7 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-capture-the-iteration-body-as-a-cuda-graph">Step 1 — Capture the iteration body as a CUDA graph</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-wrap-in-a-cuda-while-conditional-node">Step 2 — Wrap in a CUDA WHILE conditional node</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-wrap-in-a-cuda-while-conditional-node-eliminate-cpu-convergence-checks">Step 2 — Wrap in a CUDA WHILE conditional node (eliminate CPU convergence checks)</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#convergencecheckkernel">ConvergenceCheckKernel</a></li>
 </ul>
 </li>
@@ -359,13 +358,15 @@
                   
   <section class="tex2jax_ignore mathjax_ignore" id="implementation">
 <h1>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h1>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>Screenshot will be replaced soon.</p>
 <p><code class="docutils literal notranslate"><span class="pre">DevCGSolver</span></code> implements the preconditioned CG method entirely on the GPU using
-a <strong>CUDA WHILE graph</strong> — a conditional graph node (CUDA ≥ 12.4) that keeps the
-convergence loop GPU-resident with zero per-iteration CPU involvement.</p>
+a <strong>CUDA Conditional Graph</strong> — a conditional while graph node that keeps the
+convergence loop GPU resident with zero per iteration CPU work.</p>
 <p>The implementation has two steps.</p>
 <hr class="docutils" />
-<section id="step-1-capture-the-iteration-body-as-a-cuda-graph">
-<h2>Step 1 — Capture the iteration body as a CUDA graph<a class="headerlink" href="#step-1-capture-the-iteration-body-as-a-cuda-graph" title="Link to this heading">#</a></h2>
+<h2 class="rubric" id="step-1-capture-the-iteration-body-as-a-cuda-graph-goal-eliminate-launch-overhead">Step 1 — Capture the iteration body as a CUDA graph (goal: eliminate launch overhead)</h2>
 <p><img alt="Timeline overview" src="_images/implementation_step1.png" /></p>
 <p>The sequence of CG iteration is captured once using CUDA stream capture:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">cudaStreamBeginCapture</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="n">cudaStreamCaptureModeGlobal</span><span class="p">);</span>
@@ -374,12 +375,12 @@ convergence loop GPU-resident with zero per-iteration CPU involvement.</p>
 <span class="n">cudaGraphInstantiate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bodyExec</span><span class="p">,</span><span class="w"> </span><span class="n">bodyGraph</span><span class="p">,</span><span class="w"> </span><span class="p">...);</span>
 </pre></div>
 </div>
+</div>
 <p>The captured body graph replays the full iteration with minimal CPU overhead —
 no per-kernel <code class="docutils literal notranslate"><span class="pre">cudaLaunchKernel</span></code> call, just one <code class="docutils literal notranslate"><span class="pre">cudaGraphLaunch</span></code>.</p>
-</section>
 <hr class="docutils" />
-<section id="step-2-wrap-in-a-cuda-while-conditional-node">
-<h2>Step 2 — Wrap in a CUDA WHILE conditional node<a class="headerlink" href="#step-2-wrap-in-a-cuda-while-conditional-node" title="Link to this heading">#</a></h2>
+<section id="step-2-wrap-in-a-cuda-while-conditional-node-eliminate-cpu-convergence-checks">
+<h2>Step 2 — Wrap in a CUDA WHILE conditional node (eliminate CPU convergence checks)<a class="headerlink" href="#step-2-wrap-in-a-cuda-while-conditional-node-eliminate-cpu-convergence-checks" title="Link to this heading">#</a></h2>
 <p><img alt="Timeline overview" src="_images/implementation_step2.png" /></p>
 <p>A standard graph replays a <strong>fixed</strong> number of times. To loop until convergence,
 the body graph is embedded inside a <strong>CUDA WHILE node</strong>:</p>
@@ -454,7 +455,7 @@ for it to finish — all convergence decisions happen on GPU.</p>
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">GPU-Accelerated Krylov Solvers in NGSolve</p>
+        <p class="prev-next-title">Tutorial: Use case with NGSolve</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -476,8 +477,7 @@ for it to finish — all convergence decisions happen on GPU.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-capture-the-iteration-body-as-a-cuda-graph">Step 1 — Capture the iteration body as a CUDA graph</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-wrap-in-a-cuda-while-conditional-node">Step 2 — Wrap in a CUDA WHILE conditional node</a><ul class="nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-wrap-in-a-cuda-while-conditional-node-eliminate-cpu-convergence-checks">Step 2 — Wrap in a CUDA WHILE conditional node (eliminate CPU convergence checks)</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#convergencecheckkernel">ConvergenceCheckKernel</a></li>
 </ul>
 </li>
