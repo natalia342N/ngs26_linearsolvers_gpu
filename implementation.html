@@ -34,7 +34,7 @@
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
     <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=9c3e77be" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css?v=8cd3d715" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
   
@@ -341,6 +341,7 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-capture-the-iteration-body-as-a-cuda-graph-goal-eliminate-launch-overhead">Step 1 — Capture the iteration body as a CUDA graph (goal: eliminate launch overhead)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-wrap-in-a-cuda-while-conditional-node-eliminate-cpu-convergence-checks">Step 2 — Wrap in a CUDA WHILE conditional node (eliminate CPU convergence checks)</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#convergencecheckkernel">ConvergenceCheckKernel</a></li>
 </ul>
@@ -361,12 +362,14 @@
 <div class="admonition danger">
 <p class="admonition-title">Danger</p>
 <p>Screenshot will be replaced soon.</p>
+</div>
 <p><code class="docutils literal notranslate"><span class="pre">DevCGSolver</span></code> implements the preconditioned CG method entirely on the GPU using
 a <strong>CUDA Conditional Graph</strong> — a conditional while graph node that keeps the
 convergence loop GPU resident with zero per iteration CPU work.</p>
 <p>The implementation has two steps.</p>
 <hr class="docutils" />
-<h2 class="rubric" id="step-1-capture-the-iteration-body-as-a-cuda-graph-goal-eliminate-launch-overhead">Step 1 — Capture the iteration body as a CUDA graph (goal: eliminate launch overhead)</h2>
+<section id="step-1-capture-the-iteration-body-as-a-cuda-graph-goal-eliminate-launch-overhead">
+<h2>Step 1 — Capture the iteration body as a CUDA graph (goal: eliminate launch overhead)<a class="headerlink" href="#step-1-capture-the-iteration-body-as-a-cuda-graph-goal-eliminate-launch-overhead" title="Link to this heading">#</a></h2>
 <p><img alt="Timeline overview" src="_images/implementation_step1.png" /></p>
 <p>The sequence of CG iteration is captured once using CUDA stream capture:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">cudaStreamBeginCapture</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="n">cudaStreamCaptureModeGlobal</span><span class="p">);</span>
@@ -375,9 +378,9 @@ convergence loop GPU resident with zero per iteration CPU work.</p>
 <span class="n">cudaGraphInstantiate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bodyExec</span><span class="p">,</span><span class="w"> </span><span class="n">bodyGraph</span><span class="p">,</span><span class="w"> </span><span class="p">...);</span>
 </pre></div>
 </div>
-</div>
 <p>The captured body graph replays the full iteration with minimal CPU overhead —
 no per-kernel <code class="docutils literal notranslate"><span class="pre">cudaLaunchKernel</span></code> call, just one <code class="docutils literal notranslate"><span class="pre">cudaGraphLaunch</span></code>.</p>
+</section>
 <hr class="docutils" />
 <section id="step-2-wrap-in-a-cuda-while-conditional-node-eliminate-cpu-convergence-checks">
 <h2>Step 2 — Wrap in a CUDA WHILE conditional node (eliminate CPU convergence checks)<a class="headerlink" href="#step-2-wrap-in-a-cuda-while-conditional-node-eliminate-cpu-convergence-checks" title="Link to this heading">#</a></h2>
@@ -477,6 +480,7 @@ for it to finish — all convergence decisions happen on GPU.</p>
   </div>
   <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-1-capture-the-iteration-body-as-a-cuda-graph-goal-eliminate-launch-overhead">Step 1 — Capture the iteration body as a CUDA graph (goal: eliminate launch overhead)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#step-2-wrap-in-a-cuda-while-conditional-node-eliminate-cpu-convergence-checks">Step 2 — Wrap in a CUDA WHILE conditional node (eliminate CPU convergence checks)</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#convergencecheckkernel">ConvergenceCheckKernel</a></li>
 </ul>
