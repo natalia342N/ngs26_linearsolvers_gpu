@@ -2,6 +2,7 @@
 
 ```{danger}
 Screenshot will be replaced soon.
+```
 
 `DevCGSolver` implements the preconditioned CG method entirely on the GPU using
 a **CUDA Conditional Graph** — a conditional while graph node that keeps the
