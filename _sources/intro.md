@@ -2,31 +2,28 @@
 
 **Natalia Tylek — TU Wien**
 
-**NGSolve User Meeting 2026, June 29 – July 1, Winterthur**
+**NGSolve User Meeting 2026, Winterthur**
 
 ---
 
-**This presentation:** two model problems demonstrating the CUDA WHILE graph solvers
+**This presentation:** two model problems demonstrating the use of CUDA Graph solvers
 
-| | Problem | Solver |
-|---|---|---|
-| Part 1 | Poisson (symmetric SPD) | `DevCGSolver` | implemented, available publicly |
-| Part 2 | 3D convection (non-symmetric) | `DevTFQMRSolver` | implemented, not yet available publicly |
+| | Problem | Solver | Status |
+|---|---|---|---|
+| Part 1 | Poisson (symmetric SPD) | `DevCGSolver` | available in pre-release |
+| Part 2 | Convection (non-symmetric) | `DevTFQMRSolver` | not yet in pre-release |
 
 ---
 
 **Thesis context:** both solvers are needed in the IPCS Navier–Stokes timestepper
 
-| NS component | Symmetric | Constant | Solver | GPU solver |
-|---|---|---|---|---|
-| Convection | No | No | TFQMR | `DevTFQMRSolver`  |
-| Viscous / mass | Yes (SPD) | Yes | CG + BDDC | `DevCGSolver` |
-| Pressure proj. | Yes (SPD) | Yes | CG + H1AMG | `DevCGSolver` |
-| Full NS timestep | | | all 3 combined |  to be integrated |
-
+| NS component | Symmetric | Solver | GPU solver |
+|---|---|---|---|
+| Convection | No | TFQMR | `DevTFQMRSolver` |
+| Viscous / mass | Yes (SPD) | CG + preconditioner | `DevCGSolver` |
+| Pressure proj. | Yes (SPD) | CG + preconditioner | `DevCGSolver` |
 
 *GPU Implementations and CUDA Graph Acceleration of Krylov Solvers for Incompressible Navier–Stokes in NGSolve*
-
 
 ---
 
