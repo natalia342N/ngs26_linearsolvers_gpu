@@ -1,9 +1,5 @@
 # Implementation
 
-```{danger}
-Screenshot will be replaced soon.
-```
-
 `DevCGSolver` implements the preconditioned CG method entirely on the GPU using
 a **CUDA Conditional Graph** — a conditional while graph node that keeps the
 convergence loop GPU resident with zero per iteration CPU work.
@@ -14,7 +10,7 @@ The implementation has two steps.
 
 ## Step 1 — Capture the iteration body as a CUDA graph (goal: eliminate launch overhead)
 
-![Timeline overview](pictures/implementation_step1.png)
+![Timeline overview](pictures/impl1_canva.png)
 
 The sequence of CG iteration is captured once using CUDA stream capture:
 
@@ -30,13 +26,13 @@ no per-kernel `cudaLaunchKernel` call, just one `cudaGraphLaunch`.
 
 ---
 
-## Step 2 — Wrap in a CUDA WHILE conditional node (eliminate CPU convergence checks)
+## Step 2 — Wrap in a CUDA Conditional While node (eliminate CPU convergence checks)
 
 
-![Timeline overview](pictures/implementation_step2.png)
+![Timeline overview](pictures/impl2_canva.png)
 
 A standard graph replays a **fixed** number of times. To loop until convergence,
-the body graph is embedded inside a **CUDA WHILE node**:
+the body graph is embedded inside a **CUDA Conditional While node**:
 
 ```cpp
 cudaGraphCreate(&whileGraph, 0);
@@ -46,11 +42,11 @@ cudaGraphAddChildGraphNode(&bodyNode, whileGraph, bodyGraph);
 cudaGraphInstantiate(&whileExec, whileGraph, ...);
 ```
 
-The WHILE node re-executes its body graph as long as a GPU-side flag is 1.
+The Conditional While node re-executes its body graph as long as a GPU-side flag is 1.
 
 ### ConvergenceCheckKernel
 
-At the end of each iteration body, `ConvergenceCheckKernel` computes ‖r‖ and
+At the end of each iteration body, `ConvergenceCheckKernel` computes norm of r and
 sets the conditional flag directly on GPU:
 
 ```cpp
