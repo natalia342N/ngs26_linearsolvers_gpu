@@ -178,9 +178,9 @@
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Implementation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ngsolve_meeting_tutorial.html">Tutorial: Use case with NGSolve</a></li>
 </ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Timings</span></p>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Results</span></p>
 <ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="timings.html">Results &amp; Timings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="timings.html">Timings</a></li>
 </ul>
 
     </div>
@@ -366,7 +366,9 @@ convergence loop GPU resident with zero per iteration CPU work.</p>
 <hr class="docutils" />
 <section id="step-1-capture-the-iteration-body-as-a-cuda-graph-goal-eliminate-launch-overhead">
 <h2>Step 1 — Capture the iteration body as a CUDA graph (goal: eliminate launch overhead)<a class="headerlink" href="#step-1-capture-the-iteration-body-as-a-cuda-graph-goal-eliminate-launch-overhead" title="Link to this heading">#</a></h2>
-<p><img alt="Timeline overview" src="_images/impl1_canva.png" /></p>
+<!-- ![Timeline overview](pictures/impl1_canva.png) -->
+<p><img alt="Launch overhead" src="_images/impl1_canva.png" /></p>
+<p style="font-size:0.75em; color:#888; margin-top:2px;">Inspired by: NVIDIA Corporation, "CUDA Graphs", OLCF Training, 2021.</p>
 <p>The sequence of CG iteration is captured once using CUDA stream capture:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">cudaStreamBeginCapture</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="n">cudaStreamCaptureModeGlobal</span><span class="p">);</span>
 <span class="c1">// launch all iteration kernels on stream</span>
@@ -380,7 +382,9 @@ no per-kernel <code class="docutils literal notranslate"><span class="pre">cudaL
 <hr class="docutils" />
 <section id="step-2-wrap-in-a-cuda-conditional-while-node-eliminate-cpu-convergence-checks">
 <h2>Step 2 — Wrap in a CUDA Conditional While node (eliminate CPU convergence checks)<a class="headerlink" href="#step-2-wrap-in-a-cuda-conditional-while-node-eliminate-cpu-convergence-checks" title="Link to this heading">#</a></h2>
-<p><img alt="Timeline overview" src="_images/impl2_canva.png" /></p>
+<!-- ![Timeline overview](pictures/impl2_canva.png) -->
+<p><img alt="WHILE node" src="_images/impl2_canva.png" /></p>
+<p style="font-size:0.75em; color:#888; margin-top:2px;">Inspired by: S. Jones, "CUDA Graphs Conditional Nodes", NVIDIA / HiHAT, Aug 2024.</p>
 <p>A standard graph replays a <strong>fixed</strong> number of times. To loop until convergence,
 the body graph is embedded inside a <strong>CUDA Conditional While node</strong>:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">cudaGraphCreate</span><span class="p">(</span><span class="o">&amp;</span><span class="n">whileGraph</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>

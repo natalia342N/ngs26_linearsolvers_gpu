@@ -10,7 +10,11 @@ The implementation has two steps.
 
 ## Step 1 — Capture the iteration body as a CUDA graph (goal: eliminate launch overhead)
 
-![Timeline overview](pictures/impl1_canva.png)
+<!-- ![Timeline overview](pictures/impl1_canva.png) -->
+
+![Launch overhead](pictures/impl1_canva.png)
+<p style="font-size:0.75em; color:#888; margin-top:2px;">Inspired by: NVIDIA Corporation, "CUDA Graphs", OLCF Training, 2021.</p>
+
 
 The sequence of CG iteration is captured once using CUDA stream capture:
 
@@ -29,7 +33,11 @@ no per-kernel `cudaLaunchKernel` call, just one `cudaGraphLaunch`.
 ## Step 2 — Wrap in a CUDA Conditional While node (eliminate CPU convergence checks)
 
 
-![Timeline overview](pictures/impl2_canva.png)
+<!-- ![Timeline overview](pictures/impl2_canva.png) -->
+
+![WHILE node](pictures/impl2_canva.png)
+<p style="font-size:0.75em; color:#888; margin-top:2px;">Inspired by: S. Jones, "CUDA Graphs Conditional Nodes", NVIDIA / HiHAT, Aug 2024.</p>
+
 
 A standard graph replays a **fixed** number of times. To loop until convergence,
 the body graph is embedded inside a **CUDA Conditional While node**:
