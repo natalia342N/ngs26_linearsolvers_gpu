@@ -1,4 +1,4 @@
-# Linear Solvers on GPUs
+# Iterative Linear Solvers on GPUs
 
 **Natalia Tylek — TU Wien**
 
