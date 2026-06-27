@@ -1,4 +1,4 @@
-# Results & Timings
+# Timings
 
 All results on **H100 (Musica)**, 5 runs averaged, single GPU.
 
