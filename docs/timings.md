@@ -1,30 +1,36 @@
-# Timings
+# Results & Timings
 
-All results on **H100 (Musica)**, 3 runs averaged, single GPU, `tol=1e-12`.
+All results on **H100 (Musica)**, 3 runs averaged, single GPU.
+**Software:** NGSolve 6.2.2604-9-gf15d395df, CUDA 12.9.  
+**Hardware:** NVIDIA H100 (GPU) | AMD EPYC Zen4, dual-socket, 384 logical threads. 
 
 ---
 
 ## Part 1: DevCGSolver — Poisson (symmetric SPD)
 
-**Problem:** unit square, H1 order 2, Jacobi smoother preconditioner (`CreateSmoother`) 
+**Problem:** unit square, H1 order 2, Jacobi smoother preconditioner (`CreateSmoother`) — matches tutorial 5.5.1  
 **Baselines:** CPU `CGSolver`, C++ `CGSolver` with device matrices, DevCGSolver no-graph, DevCGSolver Conditional While Graph
 
-| ndof | CPU CG (ms) | C++ dev (ms) | No-graph (ms) | Conditional While Graph (ms) | vs CPU | vs C++ dev | vs No-graph |
-|---:|---:|---:|---:|---:|---:|---:|---:|
-| 1,961 | 195.8 | 6.8 | 5.7 | 3.5 | 56× | 1.95× | 1.64× |
-| **5,277** | **276.9** | **10.8** | **9.2** | **5.0** | **55×** | **2.15×** | **1.83×** |
-| **11,825** | **467.9** | **16.0** | **13.7** | **7.5** | **62×** | **2.13×** | **1.82×** |
-| 46,741 | 926.5 | 36.0 | 29.5 | 16.8 | 55× | 2.15× | 1.76× |
-| 95,225 | 1,540.5 | 51.9 | 44.6 | 26.4 | 58× | 1.96× | 1.69× |
-| 185,809 | 5,179.1 | 80.5 | 73.9 | 48.8 | **106×** | 1.65× | 1.52× |
-| 514,637 | 27,506.7 | 198.3 | 177.9 | 134.3 | **205×** | 1.48× | 1.32× |
+| ndof | CPU all-T (ms) | CPU 1T (ms) | C++ dev (ms) | No-graph (ms) | Conditional While Graph (ms) | vs 1T | vs C++ dev | vs No-graph |
+|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1,961 | 98.5 | 1.9 | 6.8 | 5.7 | 3.5 | 0.5× | 1.95× | 1.64× |
+| **5,277** | **346.6** | **8.5** | **10.8** | **9.1** | **5.0** | **1.7×** | **2.14×** | **1.81×** |
+| **11,825** | **308.5** | **29.0** | **16.0** | **13.7** | **7.5** | **3.9×** | **2.12×** | **1.81×** |
+| 46,741 | 1,351.5 | 235.9 | 35.2 | 29.2 | 16.8 | 14.0× | 2.09× | 1.74× |
+| 95,225 | 2,467.0 | 695.0 | 51.6 | 44.6 | 27.1 | 25.7× | 1.91× | 1.65× |
+| 185,809 | 4,607.0 | 1,973.7 | 81.4 | 74.9 | 49.5 | 39.9× | 1.64× | 1.51× |
+| 514,637 | 28,133.6 | 9,783.5 | 198.0 | 177.9 | 134.6 | 72.7× | 1.47× | 1.32× |
+
+> - **CPU all-T**: NGSolve TaskManager with all 384 logical threads on the node (dual-socket AMD EPYC Zen4, ignores SLURM `--cpus-per-task=22`). 
+> - **CPU 1T**: no TaskManager, single-threaded reference — unambiguous lower bound for CPU performance.  
+> GPU column times (C++ dev, no-graph, Conditional While Graph) are stable and node-independent.
 
 ---
 
 ## Part 2: DevTFQMRSolver — 3D convection (non-symmetric)
 
 **Problem:** unit cube, DG L2 order 2, convection-diffusion, block smoother preconditioner  
-**Comparison:** Python `TFQMR` with device matrices, DevTFQMRSolver no-graph, WHILE graph
+**Comparison:** Python `TFQMR` with device matrices, DevTFQMRSolver no-graph, DevTFQMRSolver Conditional While Graph
 
 | ndof | Python TFQMR (ms) | No-graph (ms) | Conditional While Graph (ms) | vs Python dev | vs No-graph |
 |---:|---:|---:|---:|---:|---:|
