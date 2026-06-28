@@ -11,9 +11,9 @@ parts:
     chapters:
     - file: profiling.md
     - file: implementation.md
-    - file: ngsolve_meeting_tutorial.md
+    - file: ngsolve_meeting_tutorial
 
-  - caption: Timings
+  - caption: Results
     chapters:
     - file: timings.md
 

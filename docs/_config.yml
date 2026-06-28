@@ -27,7 +27,9 @@ bibtex_bibfiles:
 #   url: https://github.com/NGSolve/starting_with_ngscuda.git
 
 repository:
-  url: https://github.com/natalia342N/starting_with_ngscuda.git  # ← your fork, not NGSolve
+  # url: https://github.com/natalia342N/starting_with_ngscuda.git  
+  url: https://github.com/natalia342N/ngs26_linearsolvers_gpu.git
+
 #  url: https://github.com/executablebooks/jupyter-book  # Online location of your book
 #  path_to_book: docs  # Optional path to your book, relative to the repository root
 #  branch: master  # Which branch of the repository should be used when creating links (optional)
