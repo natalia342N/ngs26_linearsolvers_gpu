@@ -1,4 +1,4 @@
-# Results & Timings
+# Timings
 
 All results on **H100 (Musica)**, 3 runs averaged, single GPU, `tol=1e-12`.
 
