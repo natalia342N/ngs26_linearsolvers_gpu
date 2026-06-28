@@ -1,4 +1,4 @@
-# Results & Timings
+# Timings
 
 All results on **H100 (Musica)**, 3 runs averaged, single GPU.
 **Software:** NGSolve 6.2.2604-9-gf15d395df, CUDA 12.9.  
