@@ -11,7 +11,7 @@
 | | Problem | Solver | Status |
 |---|---|---|---|
 | Part 1 | Poisson (symmetric SPD) | `DevCGSolver` | available in pre-release |
-| Part 2 | Convection (non-symmetric) | `DevTFQMRSolver` | not yet in pre-release |
+| Part 2 | Convection (non-symmetric) | `DevTFQMRSolver` | (not) available in pre-release |
 
 ---
 
