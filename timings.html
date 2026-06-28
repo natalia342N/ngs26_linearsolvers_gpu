@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Timings &#8212; Linear Solvers on GPUs with NGSolve</title>
+    <title>Results &amp; Timings &#8212; Linear Solvers on GPUs with NGSolve</title>
   
   
   
@@ -179,7 +179,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Results</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Timings</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Results &amp; Timings</a></li>
 </ul>
 
     </div>
@@ -330,7 +330,7 @@
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Timings</h1>
+    <h1>Results & Timings</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -353,99 +353,116 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section class="tex2jax_ignore mathjax_ignore" id="timings">
-<h1>Timings<a class="headerlink" href="#timings" title="Link to this heading">#</a></h1>
-<p>All results on <strong>H100 (Musica)</strong>, 3 runs averaged, single GPU, <code class="docutils literal notranslate"><span class="pre">tol=1e-12</span></code>.</p>
+  <section class="tex2jax_ignore mathjax_ignore" id="results-timings">
+<h1>Results &amp; Timings<a class="headerlink" href="#results-timings" title="Link to this heading">#</a></h1>
+<p>All results on <strong>H100 (Musica)</strong>, 3 runs averaged, single GPU.
+<strong>Software:</strong> NGSolve 6.2.2604-9-gf15d395df, CUDA 12.9.<br />
+<strong>Hardware:</strong> NVIDIA H100 (GPU) | AMD EPYC Zen4, dual-socket, 384 logical threads.</p>
 <hr class="docutils" />
 <section id="part-1-devcgsolver-poisson-symmetric-spd">
 <h2>Part 1: DevCGSolver — Poisson (symmetric SPD)<a class="headerlink" href="#part-1-devcgsolver-poisson-symmetric-spd" title="Link to this heading">#</a></h2>
-<p><strong>Problem:</strong> unit square, H1 order 2, Jacobi smoother preconditioner (<code class="docutils literal notranslate"><span class="pre">CreateSmoother</span></code>)
+<p><strong>Problem:</strong> unit square, H1 order 2, Jacobi smoother preconditioner (<code class="docutils literal notranslate"><span class="pre">CreateSmoother</span></code>) — matches tutorial 5.5.1<br />
 <strong>Baselines:</strong> CPU <code class="docutils literal notranslate"><span class="pre">CGSolver</span></code>, C++ <code class="docutils literal notranslate"><span class="pre">CGSolver</span></code> with device matrices, DevCGSolver no-graph, DevCGSolver Conditional While Graph</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head text-right"><p>ndof</p></th>
-<th class="head text-right"><p>CPU CG (ms)</p></th>
+<th class="head text-right"><p>CPU all-T (ms)</p></th>
+<th class="head text-right"><p>CPU 1T (ms)</p></th>
 <th class="head text-right"><p>C++ dev (ms)</p></th>
 <th class="head text-right"><p>No-graph (ms)</p></th>
 <th class="head text-right"><p>Conditional While Graph (ms)</p></th>
-<th class="head text-right"><p>vs CPU</p></th>
+<th class="head text-right"><p>vs 1T</p></th>
 <th class="head text-right"><p>vs C++ dev</p></th>
 <th class="head text-right"><p>vs No-graph</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td class="text-right"><p>1,961</p></td>
-<td class="text-right"><p>195.8</p></td>
+<td class="text-right"><p>98.5</p></td>
+<td class="text-right"><p>1.9</p></td>
 <td class="text-right"><p>6.8</p></td>
 <td class="text-right"><p>5.7</p></td>
 <td class="text-right"><p>3.5</p></td>
-<td class="text-right"><p>56×</p></td>
+<td class="text-right"><p>0.5×</p></td>
 <td class="text-right"><p>1.95×</p></td>
 <td class="text-right"><p>1.64×</p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p><strong>5,277</strong></p></td>
-<td class="text-right"><p><strong>276.9</strong></p></td>
+<td class="text-right"><p><strong>346.6</strong></p></td>
+<td class="text-right"><p><strong>8.5</strong></p></td>
 <td class="text-right"><p><strong>10.8</strong></p></td>
-<td class="text-right"><p><strong>9.2</strong></p></td>
+<td class="text-right"><p><strong>9.1</strong></p></td>
 <td class="text-right"><p><strong>5.0</strong></p></td>
-<td class="text-right"><p><strong>55×</strong></p></td>
-<td class="text-right"><p><strong>2.15×</strong></p></td>
-<td class="text-right"><p><strong>1.83×</strong></p></td>
+<td class="text-right"><p><strong>1.7×</strong></p></td>
+<td class="text-right"><p><strong>2.14×</strong></p></td>
+<td class="text-right"><p><strong>1.81×</strong></p></td>
 </tr>
 <tr class="row-even"><td class="text-right"><p><strong>11,825</strong></p></td>
-<td class="text-right"><p><strong>467.9</strong></p></td>
+<td class="text-right"><p><strong>308.5</strong></p></td>
+<td class="text-right"><p><strong>29.0</strong></p></td>
 <td class="text-right"><p><strong>16.0</strong></p></td>
 <td class="text-right"><p><strong>13.7</strong></p></td>
 <td class="text-right"><p><strong>7.5</strong></p></td>
-<td class="text-right"><p><strong>62×</strong></p></td>
-<td class="text-right"><p><strong>2.13×</strong></p></td>
-<td class="text-right"><p><strong>1.82×</strong></p></td>
+<td class="text-right"><p><strong>3.9×</strong></p></td>
+<td class="text-right"><p><strong>2.12×</strong></p></td>
+<td class="text-right"><p><strong>1.81×</strong></p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p>46,741</p></td>
-<td class="text-right"><p>926.5</p></td>
-<td class="text-right"><p>36.0</p></td>
-<td class="text-right"><p>29.5</p></td>
+<td class="text-right"><p>1,351.5</p></td>
+<td class="text-right"><p>235.9</p></td>
+<td class="text-right"><p>35.2</p></td>
+<td class="text-right"><p>29.2</p></td>
 <td class="text-right"><p>16.8</p></td>
-<td class="text-right"><p>55×</p></td>
-<td class="text-right"><p>2.15×</p></td>
-<td class="text-right"><p>1.76×</p></td>
+<td class="text-right"><p>14.0×</p></td>
+<td class="text-right"><p>2.09×</p></td>
+<td class="text-right"><p>1.74×</p></td>
 </tr>
 <tr class="row-even"><td class="text-right"><p>95,225</p></td>
-<td class="text-right"><p>1,540.5</p></td>
-<td class="text-right"><p>51.9</p></td>
+<td class="text-right"><p>2,467.0</p></td>
+<td class="text-right"><p>695.0</p></td>
+<td class="text-right"><p>51.6</p></td>
 <td class="text-right"><p>44.6</p></td>
-<td class="text-right"><p>26.4</p></td>
-<td class="text-right"><p>58×</p></td>
-<td class="text-right"><p>1.96×</p></td>
-<td class="text-right"><p>1.69×</p></td>
+<td class="text-right"><p>27.1</p></td>
+<td class="text-right"><p>25.7×</p></td>
+<td class="text-right"><p>1.91×</p></td>
+<td class="text-right"><p>1.65×</p></td>
 </tr>
 <tr class="row-odd"><td class="text-right"><p>185,809</p></td>
-<td class="text-right"><p>5,179.1</p></td>
-<td class="text-right"><p>80.5</p></td>
-<td class="text-right"><p>73.9</p></td>
-<td class="text-right"><p>48.8</p></td>
-<td class="text-right"><p><strong>106×</strong></p></td>
-<td class="text-right"><p>1.65×</p></td>
-<td class="text-right"><p>1.52×</p></td>
+<td class="text-right"><p>4,607.0</p></td>
+<td class="text-right"><p>1,973.7</p></td>
+<td class="text-right"><p>81.4</p></td>
+<td class="text-right"><p>74.9</p></td>
+<td class="text-right"><p>49.5</p></td>
+<td class="text-right"><p>39.9×</p></td>
+<td class="text-right"><p>1.64×</p></td>
+<td class="text-right"><p>1.51×</p></td>
 </tr>
 <tr class="row-even"><td class="text-right"><p>514,637</p></td>
-<td class="text-right"><p>27,506.7</p></td>
-<td class="text-right"><p>198.3</p></td>
+<td class="text-right"><p>28,133.6</p></td>
+<td class="text-right"><p>9,783.5</p></td>
+<td class="text-right"><p>198.0</p></td>
 <td class="text-right"><p>177.9</p></td>
-<td class="text-right"><p>134.3</p></td>
-<td class="text-right"><p><strong>205×</strong></p></td>
-<td class="text-right"><p>1.48×</p></td>
+<td class="text-right"><p>134.6</p></td>
+<td class="text-right"><p>72.7×</p></td>
+<td class="text-right"><p>1.47×</p></td>
 <td class="text-right"><p>1.32×</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<blockquote>
+<div><ul class="simple">
+<li><p><strong>CPU all-T</strong>: NGSolve TaskManager with all 384 logical threads on the node (dual-socket AMD EPYC Zen4, ignores SLURM <code class="docutils literal notranslate"><span class="pre">--cpus-per-task=22</span></code>).</p></li>
+<li><p><strong>CPU 1T</strong>: no TaskManager, single-threaded reference — unambiguous lower bound for CPU performance.<br />
+GPU column times (C++ dev, no-graph, Conditional While Graph) are stable and node-independent.</p></li>
+</ul>
+</div></blockquote>
 </section>
 <hr class="docutils" />
 <section id="part-2-devtfqmrsolver-3d-convection-non-symmetric">
 <h2>Part 2: DevTFQMRSolver — 3D convection (non-symmetric)<a class="headerlink" href="#part-2-devtfqmrsolver-3d-convection-non-symmetric" title="Link to this heading">#</a></h2>
 <p><strong>Problem:</strong> unit cube, DG L2 order 2, convection-diffusion, block smoother preconditioner<br />
-<strong>Comparison:</strong> Python <code class="docutils literal notranslate"><span class="pre">TFQMR</span></code> with device matrices, DevTFQMRSolver no-graph, WHILE graph</p>
+<strong>Comparison:</strong> Python <code class="docutils literal notranslate"><span class="pre">TFQMR</span></code> with device matrices, DevTFQMRSolver no-graph, DevTFQMRSolver Conditional While Graph</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head text-right"><p>ndof</p></th>
