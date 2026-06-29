@@ -383,9 +383,9 @@
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-2-non-symmetric-problem-3d-convection">Part 2: Non-symmetric problem — 3D convection</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Solve on CPU for reference timing and solution</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-acceleration-no-graoh-cg">GPU acceleration NO Graoh CG</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">GPU acceleration</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-acceleration-conditional-while-graph">GPU acceleration Conditional While Graph</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Scaling problem size</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Scaling problem size</a></li>
 </ul>
 </li>
 </ul>
@@ -567,7 +567,9 @@ with the new <strong>CUDA graph</strong> execution mode.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;ndof&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;CPU (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;C++ dev (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;13</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Cuda Conditional While Graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;17</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;speedup&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">68</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">maxh</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.007</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">]:</span>
+<span class="c1"># for maxh in [0.05, 0.03, 0.01, 0.007, 0.005]:</span>
+<span class="k">for</span> <span class="n">maxh</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">]:</span>
+
     <span class="n">m</span> <span class="o">=</span> <span class="n">Mesh</span><span class="p">(</span><span class="n">unit_square</span><span class="o">.</span><span class="n">GenerateMesh</span><span class="p">(</span><span class="n">maxh</span><span class="o">=</span><span class="n">maxh</span><span class="p">))</span>
     <span class="n">fs</span> <span class="o">=</span> <span class="n">H1</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dirichlet</span><span class="o">=</span><span class="s1">&#39;.*&#39;</span><span class="p">)</span>
     <span class="n">uu</span><span class="p">,</span> <span class="n">vv</span> <span class="o">=</span> <span class="n">fs</span><span class="o">.</span><span class="n">TnT</span><span class="p">()</span>
@@ -609,30 +611,6 @@ with the new <strong>CUDA graph</strong> execution mode.</p>
 <details>
 <summary><b>H100 reference results — Part 1 (Musica, June 2026)</b></summary>
 <p>Single run, ndof = 460,033 (5 mesh refinements, maxh=0.1):</p>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Solver</p></th>
-<th class="head text-right"><p>Time (ms)</p></th>
-<th class="head text-right"><p>Speedup vs CPU</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>CPU CG</p></td>
-<td class="text-right"><p>~27,000</p></td>
-<td class="text-right"><p>—</p></td>
-</tr>
-<tr class="row-odd"><td><p>C++ CGSolver (device matrices)</p></td>
-<td class="text-right"><p>194</p></td>
-<td class="text-right"><p><strong>~140×</strong></p></td>
-</tr>
-<tr class="row-even"><td><p>DevCGSolver (WHILE graph)</p></td>
-<td class="text-right"><p>154</p></td>
-<td class="text-right"><p><strong>~177×</strong></p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>Scaling (C++ CGSolver with device matrices vs DevCGSolver WHILE graph):</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head text-right"><p>ndof</p></th>
@@ -736,8 +714,8 @@ growing Krylov basis — also very relevant solver for <strong>Navier–Stokes</
 </div>
 </div>
 </section>
-<section id="gpu-acceleration-no-graoh-cg">
-<h3>GPU acceleration NO Graoh CG<a class="headerlink" href="#gpu-acceleration-no-graoh-cg" title="Link to this heading">#</a></h3>
+<section id="id2">
+<h3>GPU acceleration<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fdev2</span>    <span class="o">=</span> <span class="n">f2</span><span class="o">.</span><span class="n">vec</span><span class="o">.</span><span class="n">CreateDeviceVector</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -755,7 +733,7 @@ growing Krylov basis — also very relevant solver for <strong>Navier–Stokes</
                            <span class="n">maxsteps</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">printrates</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
 <span class="n">gpu2_std_ms</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">ts</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">*</span> <span class="mi">1000</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;GPU TFQMR (no graph):  </span><span class="si">{</span><span class="n">gpu2_std_ms</span><span class="si">:</span><span class="s1">.0f</span><span class="si">}</span><span class="s1"> ms&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Python TFQMR (device matrices):  </span><span class="si">{</span><span class="n">gpu2_std_ms</span><span class="si">:</span><span class="s1">.0f</span><span class="si">}</span><span class="s1"> ms&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  diff    = </span><span class="si">{</span><span class="nb">abs</span><span class="p">(</span><span class="n">Norm</span><span class="p">(</span><span class="n">gfu2</span><span class="o">.</span><span class="n">vec</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">ref_norm2</span><span class="p">)</span><span class="si">:</span><span class="s1">.1e</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;  speedup = </span><span class="si">{</span><span class="n">cpu2_ms</span><span class="o">/</span><span class="n">gpu2_std_ms</span><span class="si">:</span><span class="s1">.2f</span><span class="si">}</span><span class="s1">x&#39;</span><span class="p">)</span>
 </pre></div>
@@ -787,14 +765,16 @@ growing Krylov basis — also very relevant solver for <strong>Navier–Stokes</
 </div>
 </div>
 </section>
-<section id="id2">
-<h3>Scaling problem size<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
+<section id="id3">
+<h3>Scaling problem size<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;ndof&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;CPU (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;no graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;14</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;Conditional While Graph (ms)&#39;</span><span class="si">:</span><span class="s2">&gt;25</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="s1">&#39;speedup&#39;</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">66</span><span class="p">)</span>
 
-<span class="k">for</span> <span class="n">maxh</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">]:</span>
+<span class="c1"># for maxh in [0.2, 0.1, 0.07, 0.05]:</span>
+<span class="k">for</span> <span class="n">maxh</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.07</span><span class="p">]:</span>
+
     <span class="n">m2</span> <span class="o">=</span> <span class="n">Mesh</span><span class="p">(</span><span class="n">unit_cube</span><span class="o">.</span><span class="n">GenerateMesh</span><span class="p">(</span><span class="n">maxh</span><span class="o">=</span><span class="n">maxh</span><span class="p">))</span>
     <span class="n">fs2</span> <span class="o">=</span> <span class="n">L2</span><span class="p">(</span><span class="n">m2</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dgjumps</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">uu2</span><span class="p">,</span> <span class="n">vv2</span> <span class="o">=</span> <span class="n">fs2</span><span class="o">.</span><span class="n">TnT</span><span class="p">()</span>
@@ -855,30 +835,6 @@ growing Krylov basis — also very relevant solver for <strong>Navier–Stokes</
 <details>
 <summary><b>H100 reference results — Part 2 (Musica, June 2026)</b></summary>
 <p>Single run, ndof = 340,370:</p>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Solver</p></th>
-<th class="head text-right"><p>Time (ms)</p></th>
-<th class="head text-right"><p>Speedup vs CPU</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>CPU TFQMR</p></td>
-<td class="text-right"><p>3,148</p></td>
-<td class="text-right"><p>—</p></td>
-</tr>
-<tr class="row-odd"><td><p>Python TFQMR (device matrices)</p></td>
-<td class="text-right"><p>29</p></td>
-<td class="text-right"><p><strong>108×</strong></p></td>
-</tr>
-<tr class="row-even"><td><p>DevTFQMRSolver (WHILE graph)</p></td>
-<td class="text-right"><p>19</p></td>
-<td class="text-right"><p><strong>165×</strong></p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>Scaling (Python TFQMR vs DevTFQMRSolver WHILE graph):</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head text-right"><p>ndof</p></th>
@@ -990,9 +946,9 @@ growing Krylov basis — also very relevant solver for <strong>Navier–Stokes</
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#part-2-non-symmetric-problem-3d-convection">Part 2: Non-symmetric problem — 3D convection</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Solve on CPU for reference timing and solution</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-acceleration-no-graoh-cg">GPU acceleration NO Graoh CG</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">GPU acceleration</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#gpu-acceleration-conditional-while-graph">GPU acceleration Conditional While Graph</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Scaling problem size</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Scaling problem size</a></li>
 </ul>
 </li>
 </ul>
