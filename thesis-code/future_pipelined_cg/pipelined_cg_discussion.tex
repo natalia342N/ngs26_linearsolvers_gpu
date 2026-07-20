@@ -1,0 +1,137 @@
+\subsection*{Pipelined CG (Chronopoulos--Gear 1989): Implementation and Evaluation}
+
+\paragraph{Algorithm.}
+Standard unpreconditioned CG requires two sequential dot products per iteration:
+one to compute $\alpha_k = \gamma_k / \delta_k$ (where $\gamma_k = \langle r_k, r_k \rangle$
+and $\delta_k = \langle p_k, Ap_k \rangle$), and one to compute
+$\beta_k = \gamma_{k+1} / \gamma_k$.
+Each dot product is a global reduction that, in a distributed-memory (MPI) setting,
+requires an \texttt{AllReduce} communication call.
+Two sequential \texttt{AllReduce} calls per iteration are a significant bottleneck
+when the communication latency is large.
+
+The pipelined CG variant of Chronopoulos and Gear~\cite{chronopoulos1989s}
+eliminates the sequential dependency by computing three dot products simultaneously:
+\[
+  \gamma_k = \langle r_k, r_k \rangle, \qquad
+  \delta_k = \langle p_k, Ap_k \rangle, \qquad
+  \eta_k   = \langle Ap_k, Ap_k \rangle,
+\]
+and deriving $\beta_k$ via the recurrence
+\begin{equation}\label{eq:beta_recurrence}
+  \beta_k = \frac{\alpha_k^2 \eta_k - \gamma_k}{\gamma_k},
+\end{equation}
+which predicts $\gamma_{k+1} / \gamma_k$ without requiring the residual $r_{k+1}$
+to be computed first.
+The derivation of~\eqref{eq:beta_recurrence} relies on the identity
+$\langle r_k, Ap_k \rangle = \delta_k$,
+which follows from $A$-conjugacy of consecutive search directions
+($\langle p_{k-1}, Ap_k \rangle = 0$) and holds in exact arithmetic.
+
+In the MPI setting, the three dot products can be communicated in a single
+\texttt{AllReduce} call (three values), reducing the per-iteration communication
+cost from two sequential \texttt{AllReduce} calls to one.
+
+\paragraph{GPU implementation.}
+We implemented \texttt{DevPCGSolver} in the \texttt{ngscuda} extension,
+following the lecture-notes formulation (Algorithm~\ref{alg:pipcg}) exactly.
+The solver uses a CUDA WHILE graph to capture the entire iteration loop on-device.
+
+A key implementation challenge arose from the structure of the NGSolve assembled
+matrix: the full stiffness matrix $A$ retains non-zero entries in the rows
+corresponding to constrained (Dirichlet) degrees of freedom.
+Applying $Ap = A p$ with $p$ in the free-dof space therefore produces a vector
+$Ap$ with non-zero constrained components, which contaminate the residual
+$r \leftarrow r - \alpha Ap$ over successive iterations and cause divergence.
+
+The fix is to project $Ap$ back into the free-dof space after each matvec:
+\[
+  \tilde{s}_k = P(Ap_k), \quad \text{where } P = \text{Projector(FreeDofs)},
+\]
+and use $\tilde{s}_k$ in place of $Ap_k$ throughout.
+This ensures $r_k$ remains in the free-dof space without requiring an explicit
+preconditioner application to $r$ inside the loop.
+
+\paragraph{Fused triple-dot kernel.}
+Three separate cuBLAS dot-product calls each read two vectors, totalling
+six vector reads.  We implemented a custom CUDA kernel that computes
+$\gamma_k$, $\delta_k$, and $\eta_k$ in a single pass over the data,
+reading $r$, $p$, and $Ap$ once each (three vector reads).
+This halves the memory traffic for the reduction step.
+
+\paragraph{Numerical stability.}
+An early implementation that applied the formula~\eqref{eq:beta_recurrence}
+to the full (unprojected) system diverged after many iterations.
+This was initially misattributed to loss of $A$-conjugacy in floating-point arithmetic.
+A control experiment using a NumPy reference implementation on the correctly
+projected free-dof submatrix showed that~\eqref{eq:beta_recurrence} is
+\emph{numerically stable} on this problem: the pipelined solver converged in
+136 iterations (versus 135 for standard CG) with solution norms agreeing to
+12 significant digits.
+The divergence observed on GPU was caused entirely by the constrained-dof
+contamination described above, not by the recurrence formula itself.
+
+\paragraph{Performance results.}
+Table~\ref{tab:pipcg} shows timing results for \texttt{DevCGSolver} (standard
+preconditioned CG with WHILE graph) and \texttt{DevPCGSolver} (pipelined CG
+with WHILE graph and fused triple-dot kernel) on four mesh sizes.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{rrrrrr}
+\hline
+$n$ & CG iters & CG (ms) & PipCG iters & PipCG (ms) & Speedup \\
+\hline
+ 1\,295 & 102 & 3.13 & 100 & 3.09 & 1.01$\times$ \\
+ 2\,318 & 135 & 4.09 & 136 & 4.13 & 0.99$\times$ \\
+ 9\,918 & 204 & 6.27 & 212 & 7.43 & 0.85$\times$ \\
+18\,249 & 280 & 9.01 & 284 & 9.28 & 0.97$\times$ \\
+\hline
+\end{tabular}
+\caption{DevCGSolver vs DevPCGSolver on 3-D Poisson, H1 order 2, H100 GPU.}
+\label{tab:pipcg}
+\end{table}
+
+\texttt{DevPCGSolver} achieves no measurable speedup over \texttt{DevCGSolver}.
+
+\paragraph{Attribution of cost.}
+Two candidate explanations were considered:
+(a) the projector application on $Ap$ adds a kernel call that offsets the
+fused-dot savings; and
+(b) the per-iteration runtime is dominated by SpMV bandwidth, making
+reduction savings invisible.
+
+To separate these, a control experiment was run on a reaction-diffusion
+problem with no Dirichlet boundary conditions, where all degrees of freedom
+are free and the projector is the identity.  The relative performance was
+identical (0.98$\times$--1.00$\times$), ruling out the projector as the
+dominant cost.
+
+The correct attribution is therefore \textbf{bandwidth dominance}:
+the sparse matrix-vector product and preconditioner applications saturate
+the H100 HBM3 memory bandwidth, and the savings from fewer intra-iteration
+graph edges and reduced dot-product memory traffic are below the noise floor
+of these dominant costs.
+
+\paragraph{Remark on intra-iteration synchronisation.}
+Inside a CUDA WHILE graph, host--device synchronisations are eliminated
+entirely.  However, intra-iteration synchronisation still exists as
+\emph{graph edges} encoding data dependencies between nodes.
+Pipelined CG reduces the number of required edges (fewer reduction nodes)
+and therefore allows potentially better GPU scheduling.
+The reason no speedup is observed is not that this benefit is absent in
+principle, but that it is dwarfed by SpMV bandwidth costs at the problem
+sizes tested.
+
+\paragraph{Multi-GPU outlook.}
+The pipelining benefit becomes meaningful in a multi-GPU (MPI + CUDA) setting.
+Standard CG requires two sequential \texttt{AllReduce} calls per iteration;
+pipelined CG requires one (communicating $\gamma_k$, $\delta_k$, $\eta_k$
+simultaneously).
+On an H100 node with NVLink, \texttt{AllReduce} latency is of order
+$10$--$50\,\mu\mathrm{s}$.
+For 135 iterations, halving the \texttt{AllReduce} count saves
+approximately $1$--$7\,\mathrm{ms}$ --- significant relative to a total
+solve time of $4$--$9\,\mathrm{ms}$ on a single GPU.
+Extending \texttt{DevPCGSolver} to multi-GPU via NCCL-based collective
+operations is a natural direction for future work.
