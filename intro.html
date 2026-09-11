@@ -361,6 +361,20 @@
 <p><strong>Natalia Tylek — TU Wien</strong></p>
 <p><strong>NGSolve User Meeting 2026, Winterthur</strong></p>
 <hr class="docutils" />
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>This tutorial documents the CUDA-specific implementation as of June 2026.</strong></p>
+<p>Since then, the work has been folded into NGSolve’s general GPU layer.
+The <code class="docutils literal notranslate"><span class="pre">ngsolve.gpu</span></code> module now dispatches across backends — CUDA via
+<code class="docutils literal notranslate"><span class="pre">ngscuda</span></code>, Apple GPUs via <code class="docutils literal notranslate"><span class="pre">ngsmetal</span></code>, and a host reference device
+otherwise — and the graph-recording idea developed here has moved into
+that shared framework. The API may differ from what you see below.</p>
+<p>For the current interface, see the official tutorial:
+<a class="reference external" href="https://docu.ngsolve.org/latest/i-tutorials/unit-5.5-cuda/poisson_cuda.html">Solving the Poisson Equation on devices</a></p>
+<p>The material here remains useful for the reasoning behind the design:
+why per-iteration CPU synchronisation dominates GPU Krylov solvers, and
+how capturing the iteration loop removes it.</p>
+</div>
 <p><strong>This presentation:</strong> two model problems demonstrating the use of CUDA Graph solvers</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
